@@ -1,7 +1,7 @@
 # DocumentTS
 A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
-## Goals 
+## Goals
 - Reliable
   - Rely on the rock-solid Native Node.js MongoDB drivers
   - Don't inject custom code into DB calls without explicit intent by the developer
@@ -22,11 +22,13 @@ A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Docu
   - Leverage TypeScript types, interfaces, generics and inheritance to achieve development-time certainty of proper database access
   - Keep the code smart, readable and lean
   - Be very selective about any new features
-  
+
 ## What It Isn't
 Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can developer directly against MongoDB while enjoying some conveniences as you choose.
 
 ## Quick Start
+Pre-requisite: `npm install -g typescript`
+
 See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
 
 More details coming soon
