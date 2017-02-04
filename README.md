@@ -27,7 +27,9 @@ A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Docu
 Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can developer directly against MongoDB while enjoying some conveniences as you choose.
 
 ## Quick Start
-Coming soon
+See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
+
+More details coming soon
 
 ## Features
 Coming soon
