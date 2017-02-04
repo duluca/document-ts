@@ -1,6 +1,6 @@
 {
   "name": "document-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "index.js",
   "scripts": {
