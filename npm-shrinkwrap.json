@@ -1,6 +1,6 @@
 {
   "name": "document-ts",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "dependencies": {
     "ansi-regex": {
       "version": "2.1.1",
