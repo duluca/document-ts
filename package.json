@@ -4,7 +4,8 @@
   "description": "Very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "preinstall": "tsc",
+    "test": "tsc && jasmine"
   },
   "repository": {
     "type": "git",

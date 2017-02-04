@@ -15,6 +15,7 @@ export async function connect(
 
   if(certFileUri) {
     let certFileBuf = [fs.readFileSync(certFileUri)]
+
     mongoOptions = {
       mongos: {
         ssl: true,
