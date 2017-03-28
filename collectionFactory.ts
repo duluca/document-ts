@@ -21,7 +21,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return () => getDbInstance().collection(this.collectionName)
   }
 
-  aggregate(pipeline: Object[]): mongodb.AggregationCursor {
+  aggregate<T>(pipeline: Object[]): mongodb.AggregationCursor<T> {
     return this.collection().aggregate(pipeline)
   }
 
@@ -40,15 +40,15 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return this.hydrateObject(document)
   }
 
-  async findWithPagination(queryParams: Object, aggregationCursor?: Func<mongodb.AggregationCursor>,
+  async findWithPagination<T>(queryParams: Object, aggregationCursor?: Func<mongodb.AggregationCursor<T>>,
     query?: string | Object, searchableProperties?: string[], hydrate = false): Promise<IPaginationResult<any>> {
 
     let collection = this
 
     let options = this.buildQueryParameters(queryParams)
 
-    let pagingCursor: mongodb.AggregationCursor
-    let totalCursor: mongodb.AggregationCursor
+    let pagingCursor: mongodb.AggregationCursor<T>
+    let totalCursor: mongodb.AggregationCursor<T>
 
     if(aggregationCursor) {
       pagingCursor = aggregationCursor()
@@ -73,16 +73,16 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  async getTotal(aggregationCursor?: mongodb.AggregationCursor, query?: Object): Promise<number> {
+  async getTotal<T>(aggregationCursor?: mongodb.AggregationCursor<T>, query?: Object): Promise<number> {
     if(aggregationCursor) {
       let result = await aggregationCursor.group({_id: null, count: { $sum: 1 } }).toArray()
-      return result.length > 0 ? result[0].count : 0
+      return result.length > 0 ? (result[0] as any).count : 0
     } else {
       return this.count(query)
     }
   }
 
-  getCursor(query: string | Object, searchableProperties: string[]): mongodb.Cursor {
+  getCursor<T>(query: string | Object, searchableProperties: string[]): mongodb.Cursor<T> {
     let builtQuery = {}
     if(typeof query === 'string') {
       builtQuery = this.buildTokenizedQueryObject(query, searchableProperties)
@@ -190,11 +190,11 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  buildQuery(cursor: mongodb.Cursor | mongodb.AggregationCursor, parameters: IQueryParameters): mongodb.Cursor | mongodb.AggregationCursor {
+  buildQuery<T>(cursor: mongodb.Cursor<T> | mongodb.AggregationCursor<T>, parameters: IQueryParameters): mongodb.Cursor<T> | mongodb.AggregationCursor<T> {
     if(parameters) {
       if(parameters.sortKeyOrList) {
         for(let sortObject of this.sortKeyOrListToObject(parameters.sortKeyOrList)) {
-          cursor = (cursor as mongodb.AggregationCursor).sort(sortObject)
+          cursor = (cursor as mongodb.AggregationCursor<T>).sort(sortObject)
         }
       }
 
