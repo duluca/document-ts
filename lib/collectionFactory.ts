@@ -1,10 +1,9 @@
-
-import * as mongodb from 'mongodb'
-import * as bluebird from 'bluebird'
-import * as _ from 'lodash'
+import { ObjectID, AggregationCursor, Cursor, FindOneOptions, FindOneAndReplaceOption, MongoCountPreferences } from 'mongodb'
+import { map as bluebirdMap } from 'bluebird'
+import { each as _each, map as _map} from 'lodash'
 
 import { getDbInstance } from './database'
-import { IDocument, ICollectionProvider, IPaginationResult, Func, IQueryParameters } from './document'
+import { IDocument, ICollectionProvider, IPaginationResult, Func, IQueryParameters } from './interfaces'
 
 export abstract class CollectionFactory<TDocument extends IDocument> {
   constructor(public collectionName: string, private documentType, public searchableProperties: string[] = []) {
@@ -13,7 +12,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   sanitizeId(filter: Object) {
     var hasId = filter.hasOwnProperty('_id')
     if(hasId && typeof filter['_id'] !== 'object') {
-      filter['_id'] = new mongodb.ObjectID(filter['_id'])
+      filter['_id'] = new ObjectID(filter['_id'])
     }
   }
 
@@ -21,59 +20,67 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return () => getDbInstance().collection(this.collectionName)
   }
 
-  aggregate<T>(pipeline: Object[]): mongodb.AggregationCursor<T> {
+  aggregate<T>(pipeline: Object[]): AggregationCursor<T> {
     return this.collection().aggregate(pipeline)
   }
 
-  async findOne(filter: Object, options?: mongodb.FindOneOptions ): Promise<TDocument> {
+  protected get undefinedObject(): TDocument{ //TODO: how to detect this as undefined?
+    return <TDocument>new this.documentType()
+  }
+
+  async findOne(filter: Object, options?: FindOneOptions ): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOne(filter, options)
     if(document) {
       return <TDocument>new this.documentType(document)
     }
-    return undefined
+    return this.undefinedObject
   }
 
-  async findOneAndUpdate(filter: Object, update: Object, options?: mongodb.FindOneAndReplaceOption ): Promise<TDocument> {
+  async findOneAndUpdate(filter: Object, update: Object, options?: FindOneAndReplaceOption ): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOneAndUpdate(filter, update, options)
-    return this.hydrateObject(document)
+    return this.hydrateObject(document) || this.undefinedObject
   }
 
-  async findWithPagination<T>(queryParams: Object, aggregationCursor?: Func<mongodb.AggregationCursor<T>>,
+  async findWithPagination<T>(queryParams: Object, aggregationCursor?: Func<AggregationCursor<T>>,
     query?: string | Object, searchableProperties?: string[], hydrate = false): Promise<IPaginationResult<any>> {
 
     let collection = this
 
     let options = this.buildQueryParameters(queryParams)
 
-    let pagingCursor: mongodb.AggregationCursor<T>
-    let totalCursor: mongodb.AggregationCursor<T>
+    let pagingCursor: AggregationCursor<T>
+    let totalCursor: AggregationCursor<T> | undefined
+    let cursor: Cursor<T> | AggregationCursor<T>
 
     if(aggregationCursor) {
       pagingCursor = aggregationCursor()
       totalCursor = aggregationCursor()
+
+      if(options && options.filter) {
+        pagingCursor = pagingCursor.match(this.buildTokenizedQueryObject(options.filter, this.searchableProperties))
+      }
+
+      cursor = pagingCursor
+    } else {
+      if(!query) {
+        query = {}
+      }
+      cursor = this.getCursor(query, searchableProperties || this.searchableProperties)
     }
-
-    let total = await this.getTotal(totalCursor, query)
-
-    if(pagingCursor && options.filter) {
-      pagingCursor = pagingCursor.match(this.buildTokenizedQueryObject(options.filter, this.searchableProperties))
-    }
-
-    let cursor = pagingCursor || this.getCursor(query, searchableProperties || this.searchableProperties)
 
     let documents = this.buildQuery(cursor, options).toArray()
 
     return {
-        data: await bluebird.map(documents, function(document) {
+        data: await bluebirdMap(documents, function(document) {
           return hydrate ? collection.hydrateObject(document) : document
       }),
-      total: total
+      total: await this.getTotal(totalCursor, query)
     }
   }
 
-  async getTotal<T>(aggregationCursor?: mongodb.AggregationCursor<T>, query?: Object): Promise<number> {
+  async getTotal<T>(aggregationCursor?: AggregationCursor<T>, query = {}): Promise<number> {
     if(aggregationCursor) {
       let result = await aggregationCursor.group({_id: null, count: { $sum: 1 } }).toArray()
       return result.length > 0 ? (result[0] as any).count : 0
@@ -82,7 +89,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  getCursor<T>(query: string | Object, searchableProperties: string[]): mongodb.Cursor<T> {
+  getCursor<T>(query: string | Object, searchableProperties: string[]): Cursor<T> {
     let builtQuery = {}
     if(typeof query === 'string') {
       builtQuery = this.buildTokenizedQueryObject(query, searchableProperties)
@@ -95,7 +102,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   fieldsArrayToObject(fields: string[]): Object {
     let fieldsObject: Object = {}
 
-    _.each(fields, function(field) {
+    _each(fields, function(field) {
       fieldsObject[field] = 1
     })
 
@@ -105,19 +112,19 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   async find(query: Object, fields?: Object, skip?: number, limit?: number, timeout?: number ): Promise<TDocument[]> {
     let collection = this
     let documents = this.collection().find(query, fields, skip, limit, timeout).toArray()
-    return bluebird.map(documents, function(document) {
-      return collection.hydrateObject(document)
+    return bluebirdMap(documents, function(document) {
+      return collection.hydrateObject(document) || collection.undefinedObject
     })
   }
 
-  hydrateObject(document): TDocument {
+  hydrateObject(document): TDocument | undefined {
     if(document) {
         return <TDocument>new this.documentType(document)
     }
     return undefined
   }
 
-  async count(query: Object, options?: mongodb.MongoCountPreferences ): Promise<number> {
+  async count(query: Object, options?: MongoCountPreferences ): Promise<number> {
     return await this.collection().count(query, options)
   }
 
@@ -134,7 +141,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
 
   buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object {
     let that = this
-    let query = _.map(searchableProperties, function(property: string) {
+    let query = _map(searchableProperties, function(property: string) {
         let obj: any = {}
         obj[property] = that.tokenize(filter);
         return obj;
@@ -143,7 +150,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return { $or: query };
   }
 
-  buildQueryParameters(query?: any): IQueryParameters {
+  buildQueryParameters(query?: any): IQueryParameters | undefined {
     if(!query) {
       return undefined
     }
@@ -186,15 +193,15 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     } else if(!Array.isArray(sortKeyOrList)) {
       return [sortKeyOrList]
     } else {
-      return _.map(sortKeyOrList, (key) => this.sortKeyToObject(key))
+      return _map(sortKeyOrList, (key) => this.sortKeyToObject(key))
     }
   }
 
-  buildQuery<T>(cursor: mongodb.Cursor<T> | mongodb.AggregationCursor<T>, parameters: IQueryParameters): mongodb.Cursor<T> | mongodb.AggregationCursor<T> {
+  buildQuery<T>(cursor: Cursor<T> | AggregationCursor<T>, parameters?: IQueryParameters): Cursor<T> | AggregationCursor<T> {
     if(parameters) {
       if(parameters.sortKeyOrList) {
         for(let sortObject of this.sortKeyOrListToObject(parameters.sortKeyOrList)) {
-          cursor = (cursor as mongodb.AggregationCursor<T>).sort(sortObject)
+          cursor = (cursor as AggregationCursor<T>).sort(sortObject)
         }
       }
 

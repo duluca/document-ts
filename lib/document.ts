@@ -1,43 +1,13 @@
-import * as mongodb from 'mongodb'
-import * as _ from 'lodash'
+import { Collection, ObjectID, CollectionInsertOneOptions, ReplaceOneOptions, DeleteWriteOpResultObject } from 'mongodb'
+import { IDocument } from './interfaces'
+import { remove as _remove, includes as _includes, uniq as _uniq} from 'lodash'
 
 import { getDbInstance } from './database'
-
-export interface Func<TResult>
-{
-    (): TResult
-}
-
-export interface IQueryParameters {
-  filter?: string,
-  skip?: number,
-  limit?: number,
-  sortKeyOrList?: string | Object[] | Object
-}
-
-export interface ICollectionProvider {
-  (): mongodb.Collection
-}
-
-export interface IDocument {
-  _id: mongodb.ObjectID,
-  collectionName: string
-}
-
-export interface IPaginationResult<TDocument extends IDocument> {
-  data: TDocument[],
-  total: number
-}
-
-export function DocumentException(message: string) {
-  this.message = message
-  this.name = 'DocumentException'
-}
 
 const defaultExcludes = [ 'collectionName', 'includes', 'excludes' ]
 
 export abstract class Document<TDocument extends IDocument> implements IDocument {
-  public _id: mongodb.ObjectID
+  public _id: ObjectID
 
   constructor(public collectionName: string, document?: TDocument) {
     if(document) {
@@ -49,7 +19,7 @@ export abstract class Document<TDocument extends IDocument> implements IDocument
 
   protected abstract getPropertiesToExclude(): string []
 
-  protected get collection(): mongodb.Collection {
+  protected get collection(): Collection {
     return getDbInstance().collection(this.collectionName)
   }
 
@@ -59,13 +29,13 @@ export abstract class Document<TDocument extends IDocument> implements IDocument
 
   private hasObjectId(): Boolean {
     if(this._id && this._id.generationTime) {
-      return mongodb.ObjectID.isValid(this._id.generationTime)
+      return ObjectID.isValid(this._id.generationTime)
     }
 
     return false
   }
 
-  async save(options?: mongodb.CollectionInsertOneOptions | mongodb.ReplaceOneOptions):
+  async save(options?: CollectionInsertOneOptions | ReplaceOneOptions):
     Promise<boolean> {
     if(!this.hasObjectId()) {
       let result = await this.collection.insertOne(this, options)
@@ -80,7 +50,7 @@ export abstract class Document<TDocument extends IDocument> implements IDocument
     }
   }
 
-  delete(): Promise<mongodb.DeleteWriteOpResultObject> {
+  delete(): Promise<DeleteWriteOpResultObject> {
     let document = this
     let collection = this.collection
     return collection.deleteOne({ _id: document._id })
@@ -92,8 +62,8 @@ export abstract class Document<TDocument extends IDocument> implements IDocument
     let excludes = defaultExcludes.concat(document.getPropertiesToExclude())
     let includes = document.getCalculatedPropertiesToInclude()
 
-    let keys = _.remove(Object.keys(document), function(key) {
-        return !_.includes(excludes, key)
+    let keys = _remove(Object.keys(document), function(key) {
+        return !_includes(excludes, key)
     })
     return keys.concat(includes)
   }
@@ -109,7 +79,7 @@ export function serialize(document, keys?: string[]) {
   } else if(!keys) {
     return {}
   }
-    keys = _.uniq(keys)
+    keys = _uniq(keys)
     let serializationTarget = {}
     for(let key of keys) {
       let child = document[key]
@@ -131,4 +101,3 @@ export function serialize(document, keys?: string[]) {
     }
     return serializationTarget
 }
-

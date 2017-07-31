@@ -1,6 +1,6 @@
 'use strict'
 
-import * as fs from 'fs'
+import { readFileSync } from 'fs'
 import { MongoClient, MongoClientOptions, Db } from 'mongodb'
 
 let dbInstance: Db
@@ -14,15 +14,13 @@ export async function connect(
   let mongoOptions: MongoClientOptions = {}
 
   if(certFileUri) {
-    let certFileBuf = [fs.readFileSync(certFileUri)]
+    let certFileBuf = [readFileSync(certFileUri)]
 
     mongoOptions = {
-      mongos: {
-        ssl: true,
-        sslValidate: true,
-        sslCA: certFileBuf,
-        poolSize: 1
-      }
+      ssl: true,
+      sslValidate: true,
+      sslCA: certFileBuf,
+      poolSize: 1
     }
   }
 
