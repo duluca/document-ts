@@ -9,7 +9,6 @@ export async function connect(
   mongoUri: string,
   isProduction: boolean = false,
   certFileUri?: string) {
-  console.log('Connecting to db...')
 
   let mongoOptions: MongoClientOptions = {}
 

@@ -8,7 +8,10 @@
     "build": "rimraf ./dist && tsc",
     "build:test": "tsc -p tests",
     "prepublish": "npm run test",
-    "test": "npm run build && npm run build:test && JASMINE_CONFIG_PATH=./jasmine.json jasmine"
+    "pretest": "npm run build && npm run build:test",
+    "test": "JASMINE_CONFIG_PATH=./jasmine.json jasmine",
+    "prestandalone": "npm run build:test",
+    "standalone": "node tests/standalone"
   },
   "repository": {
     "type": "git",
@@ -28,10 +31,13 @@
   "homepage": "https://github.com/duluca/DocumentTS#readme",
   "devDependencies": {
     "@types/jasmine": "^2.5.53",
+    "@types/uuid": "^3.4.0",
+    "bcryptjs": "^2.4.3",
     "jasmine": "^2.7.0",
     "mongo-in-memory": "0.0.5",
     "rimraf": "^2.6.1",
-    "typescript": "^2.4.2"
+    "typescript": "^2.4.2",
+    "uuid": "^3.1.0"
   },
   "dependencies": {
     "@types/bluebird": "^3.5.8",

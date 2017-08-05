@@ -3,24 +3,24 @@ import { map as bluebirdMap } from 'bluebird'
 import { each as _each, map as _map} from 'lodash'
 
 import { getDbInstance } from './database'
-import { IDocument, ICollectionProvider, IPaginationResult, Func, IQueryParameters } from './interfaces'
+import { ICollectionProvider, IFilter, IDocument, Func, IPaginationResult, IQueryParameters } from './interfaces'
 
 export abstract class CollectionFactory<TDocument extends IDocument> {
-  constructor(public collectionName: string, private documentType, public searchableProperties: string[] = []) {
+  constructor(public collectionName: string, private documentType: any, public searchableProperties: string[] = []) {
   }
 
-  sanitizeId(filter: Object) {
+  sanitizeId(filter: IFilter) {
     var hasId = filter.hasOwnProperty('_id')
     if(hasId && typeof filter['_id'] !== 'object') {
       filter['_id'] = new ObjectID(filter['_id'])
     }
   }
 
-  get collection(): ICollectionProvider {
-    return () => getDbInstance().collection(this.collectionName)
+  get collection(): ICollectionProvider<TDocument> {
+    return () => getDbInstance().collection<TDocument>(this.collectionName)
   }
 
-  aggregate<T>(pipeline: Object[]): AggregationCursor<T> {
+  aggregate(pipeline: Object[]): AggregationCursor<TDocument> {
     return this.collection().aggregate(pipeline)
   }
 
@@ -28,7 +28,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return <TDocument>new this.documentType()
   }
 
-  async findOne(filter: Object, options?: FindOneOptions ): Promise<TDocument> {
+  async findOne(filter: IFilter, options?: FindOneOptions ): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOne(filter, options)
     if(document) {
@@ -37,22 +37,22 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return this.undefinedObject
   }
 
-  async findOneAndUpdate(filter: Object, update: Object, options?: FindOneAndReplaceOption ): Promise<TDocument> {
+  async findOneAndUpdate(filter: IFilter, update: Object, options?: FindOneAndReplaceOption ): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOneAndUpdate(filter, update, options)
-    return this.hydrateObject(document) || this.undefinedObject
+    return this.hydrateObject(document.value) || this.undefinedObject
   }
 
-  async findWithPagination<T>(queryParams: Object, aggregationCursor?: Func<AggregationCursor<T>>,
+  async findWithPagination(queryParams: Object, aggregationCursor?: Func<AggregationCursor<TDocument>>,
     query?: string | Object, searchableProperties?: string[], hydrate = false): Promise<IPaginationResult<any>> {
 
     let collection = this
 
     let options = this.buildQueryParameters(queryParams)
 
-    let pagingCursor: AggregationCursor<T>
-    let totalCursor: AggregationCursor<T> | undefined
-    let cursor: Cursor<T> | AggregationCursor<T>
+    let pagingCursor: AggregationCursor<TDocument>
+    let totalCursor: AggregationCursor<TDocument> | undefined
+    let cursor: Cursor<TDocument> | AggregationCursor<TDocument>
 
     if(aggregationCursor) {
       pagingCursor = aggregationCursor()
@@ -73,14 +73,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     let documents = this.buildQuery(cursor, options).toArray()
 
     return {
-        data: await bluebirdMap(documents, function(document) {
+        data: await bluebirdMap(documents, function(document: TDocument) {
           return hydrate ? collection.hydrateObject(document) : document
       }),
       total: await this.getTotal(totalCursor, query)
     }
   }
 
-  async getTotal<T>(aggregationCursor?: AggregationCursor<T>, query = {}): Promise<number> {
+  async getTotal(aggregationCursor?: AggregationCursor<TDocument>, query = {}): Promise<number> {
     if(aggregationCursor) {
       let result = await aggregationCursor.group({_id: null, count: { $sum: 1 } }).toArray()
       return result.length > 0 ? (result[0] as any).count : 0
@@ -89,7 +89,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  getCursor<T>(query: string | Object, searchableProperties: string[]): Cursor<T> {
+  getCursor(query: string | Object, searchableProperties: string[]): Cursor<TDocument> {
     let builtQuery = {}
     if(typeof query === 'string') {
       builtQuery = this.buildTokenizedQueryObject(query, searchableProperties)
@@ -100,7 +100,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   fieldsArrayToObject(fields: string[]): Object {
-    let fieldsObject: Object = {}
+    let fieldsObject: IFilter = {}
 
     _each(fields, function(field) {
       fieldsObject[field] = 1
@@ -117,14 +117,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     })
   }
 
-  hydrateObject(document): TDocument | undefined {
+  hydrateObject(document: TDocument | undefined): TDocument | undefined {
     if(document) {
         return <TDocument>new this.documentType(document)
     }
     return undefined
   }
 
-  async count(query: Object, options?: MongoCountPreferences ): Promise<number> {
+  async count(query: Object, options?: MongoCountPreferences): Promise<number> {
     return await this.collection().count(query, options)
   }
 
@@ -180,7 +180,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       return sortKey
     }
     else {
-      let sortObject = {}
+      let sortObject: {[index:string]: number} = {}
       let isDesc = sortKey[0] === '-'
       sortObject[sortKey.substring(isDesc ? 1 : 0)] = isDesc ? -1 : 1
       return sortObject
@@ -197,11 +197,12 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  buildQuery<T>(cursor: Cursor<T> | AggregationCursor<T>, parameters?: IQueryParameters): Cursor<T> | AggregationCursor<T> {
+  buildQuery(cursor: Cursor<TDocument> | AggregationCursor<TDocument>, parameters?: IQueryParameters)
+    : Cursor<TDocument> | AggregationCursor<TDocument> {
     if(parameters) {
       if(parameters.sortKeyOrList) {
         for(let sortObject of this.sortKeyOrListToObject(parameters.sortKeyOrList)) {
-          cursor = (cursor as AggregationCursor<T>).sort(sortObject)
+          cursor = (cursor as AggregationCursor<TDocument>).sort(sortObject)
         }
       }
 

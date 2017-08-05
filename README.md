@@ -26,12 +26,27 @@ A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Docu
 ## What It Isn't
 Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can developer directly against MongoDB while enjoying some conveniences as you choose.
 
+## Inspirations
+Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definitely is inspired by them in the way they've solved certain problems such as hydration. Check out the source code for those projects here:
+- Mongoose
+- [Camo](https://github.com/scottwrobinson/camo)
+
 ## Quick Start
-Pre-requisite: `npm install -g typescript`
+- Run `npm install`
+- Run `npm test`
+
+See `tests\user.ts` for sample Model implementation
 
 See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
 
 More details coming soon
 
 ## Features
-Coming soon
+- `connect()`
+  _MongoDB async connection harness_
+  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
+- `Document` and `IDocument`
+  _Base Class and Interface to help define your own models_
+  ...
+
+More Coming soon
