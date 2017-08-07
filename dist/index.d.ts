@@ -3,3 +3,4 @@ export * from './collectionFactory';
 export * from './document';
 export * from './documentException';
 export * from './interfaces';
+export * from './serializer';
