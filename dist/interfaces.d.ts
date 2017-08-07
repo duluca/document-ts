@@ -20,5 +20,5 @@ export interface IPaginationResult<TDocument extends IDocument> {
     total: number;
 }
 export interface IFilter {
-    [index: string]: ObjectID | number | string;
+    [index: string]: any;
 }
