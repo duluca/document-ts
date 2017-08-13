@@ -1,6 +1,93 @@
 # DocumentTS
 A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
+## Quick Start
+- Add DocumentTS to your project with `npm install --save document-ts`
+- Run `npm shrinkwrap` -- this will lock all your dependencies
+- Connect to your Mongo database using `connect()`
+
+```js
+import { connect } from 'document-ts'
+
+async function start() {
+  // If isProd is set to true and a .pem file is provided, SSL will be used to connect: i.e. connect(config.mongoUri, isProd, 'server/compose-ca.pem')
+  await connect(process.env.MONGO_URI)
+}
+
+start()
+```
+
+- Define the interface for your first model
+> See `tests\user.ts` for sample Model implementation
+
+```js
+export interface IUser extends IDocument {
+  email: string,
+  firstName: string,
+  lastName: string,
+  role: string
+}
+```
+- Define the class for your model
+> See `tests\user.ts` for sample Model implementation
+```js
+export class User extends Document<IUser> implements IUser {
+  static collectionName = 'users'
+
+  private password: string
+
+  public email: string
+  public firstName: string
+  public lastName: string
+  public role: string
+
+  constructor(user?: IUser) {
+    super(User.collectionName, user)
+  }
+  ...
+}
+```
+
+- Implement `getCalculatedPropertiesToInclude()` which will ensure that your `get` properties that are "calculate" on the fly will be serialized when sending the model down to the client, but it will **not** be saved in the database.
+
+```js
+  getCalculatedPropertiesToInclude(): string[]{
+      return ['fullName']
+  }
+```
+
+- Implement `getPropertiesToExclude()` which will ensure that certain properties like passwords will **not** be serialized when sending the model down to the client, but it will still be saved in the database.
+
+```js
+  getPropertiesToExclude(): string[]{
+      return ['password']
+  }
+```
+
+- Implement the `CollectionFactory` class, so that you can run Mongo queries without having to specify the collection and TypeScript type name every time you can a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
+
+```js
+  class UserCollectionFactory extends CollectionFactory<User> {
+      constructor(docType: typeof User) {
+          super(User.collectionName, docType, [ 'firstName', 'lastName', 'email' ])
+      }
+  }
+
+  export let UserCollection = new UserCollectionFactory(User)
+```
+
+- `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
+
+See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
+
+## Features
+- `connect()`
+  _MongoDB async connection harness_
+  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
+- `Document` and `IDocument`
+  _Base Class and Interface to help define your own models_
+  ...
+
 ## Goals
 - Reliable
   - Rely on the rock-solid Native Node.js MongoDB drivers
@@ -31,22 +118,6 @@ Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definite
 - Mongoose
 - [Camo](https://github.com/scottwrobinson/camo)
 
-## Quick Start
+## Building This Project
 - Run `npm install`
 - Run `npm test`
-
-See `tests\user.ts` for sample Model implementation
-
-See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
-
-More details coming soon
-
-## Features
-- `connect()`
-  _MongoDB async connection harness_
-  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
-- `Document` and `IDocument`
-  _Base Class and Interface to help define your own models_
-  ...
-
-More Coming soon
