@@ -17,6 +17,27 @@ async function start() {
 start()
 ```
 
+- If you use `connect()` then you don't have to worry about having your Database Instance initialized during an asynchoronous start up sequence. `getDbInstance` gives you access to the native MongoDB driver to perform custom functions like creating indexes.
+
+```js
+import { getDbInstance } from 'document-ts'
+
+// assuming this is called within an async function
+await dbInstance.collection('users').createIndexes([
+    {
+      key: {
+        displayName: 1
+      }
+    },
+    {
+      key: {
+        email: 1
+      },
+      unique: true
+    }
+  ])
+```
+
 - Define the interface for your first model
 > See `tests\user.ts` for sample Model implementation
 
@@ -64,7 +85,7 @@ export class User extends Document<IUser> implements IUser {
   }
 ```
 
-- Implement the `CollectionFactory` class, so that you can run Mongo queries without having to specify the collection and TypeScript type name every time you can a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
+- Implement the `CollectionFactory` class, so that you can run Mongo queries without having to call `getDbInstance` or specify the collection and TypeScript type name every time you run a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
 
 ```js
   class UserCollectionFactory extends CollectionFactory<User> {
@@ -93,6 +114,18 @@ export class User extends Document<IUser> implements IUser {
   toBSON() {
     let keys = Object.keys(this).concat(['fullAddress', 'localAddress'])
     return serialize(serializationStrategy.toBSON, this, keys)
+  }
+```
+
+- To debug the default serialization behavior, implement
+
+```js
+  toJSON() {
+    return super.toJSON()
+  }
+
+  toBSON() {
+    return super.toBSON()
   }
 ```
 
