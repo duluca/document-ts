@@ -78,6 +78,24 @@ export class User extends Document<IUser> implements IUser {
 
 - `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
 
+- Optionally implement `toJSON()` to customize serialization/hydration behavior
+
+```js
+  toJSON() {
+    let keys = Object.keys(this).concat(['fullAddress', 'localAddress'])
+    return serialize(serializationStrategy.toJSON, this, keys)
+  }
+```
+
+- Optionally implement `toBSON()` to customize database serialization behavior
+
+```
+  toBSON() {
+    let keys = Object.keys(this).concat(['fullAddress', 'localAddress'])
+    return serialize(serializationStrategy.toBSON, this, keys)
+  }
+```
+
 See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
 
 ## Features
