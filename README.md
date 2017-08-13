@@ -42,6 +42,8 @@ await dbInstance.collection('users').createIndexes([
 > See `tests\user.ts` for sample Model implementation
 
 ```js
+import { IDocument } from 'document-ts'
+
 export interface IUser extends IDocument {
   email: string,
   firstName: string,
@@ -51,7 +53,10 @@ export interface IUser extends IDocument {
 ```
 - Define the class for your model
 > See `tests\user.ts` for sample Model implementation
+
 ```js
+import { Document } from 'document-ts'
+
 export class User extends Document<IUser> implements IUser {
   static collectionName = 'users'
 
@@ -88,6 +93,8 @@ export class User extends Document<IUser> implements IUser {
 - Implement the `CollectionFactory` class, so that you can run Mongo queries without having to call `getDbInstance` or specify the collection and TypeScript type name every time you run a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
 
 ```js
+  import { CollectionFactory } from 'document-ts'
+
   class UserCollectionFactory extends CollectionFactory<User> {
       constructor(docType: typeof User) {
           super(User.collectionName, docType, [ 'firstName', 'lastName', 'email' ])
@@ -121,6 +128,7 @@ export class User extends Document<IUser> implements IUser {
 
 ```js
   toJSON() {
+    // drop a breakpoint here or console.log(this)
     return super.toJSON()
   }
 
