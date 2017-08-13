@@ -75,4 +75,20 @@ describe('Document', function() {
     expect(expectedFullName).toEqual(foundUser.fullName)
     done()
   })
+
+  it('should find a user with password', async done => {
+    let uri = mongoServerInstance.getMongouri("testDb")
+    await connect(uri)
+
+    var expectedPassword = 'acme'
+
+    let user = new User()
+    await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', 'acme')
+    let foundUser = await UserCollection.findOne({'lastName': 'Uluca'})
+
+    let isMatch = await foundUser.comparePassword(expectedPassword)
+
+    expect(isMatch).toBeTruthy()
+    done()
+  })
 })

@@ -68,7 +68,7 @@ export class User extends Document<IUser> implements IUser {
     })
   }
 
-  comparePassword(password){
+  comparePassword(password): Promise<boolean>{
     let user = this
     return new Promise(function(resolve, reject){
       bcrypt.compare(password, user.password, function(err, isMatch) {
