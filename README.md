@@ -1,6 +1,8 @@
 # DocumentTS
 A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
+> Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
+
 ## Quick Start
 - Add DocumentTS to your project with `npm install --save document-ts`
 - Run `npm shrinkwrap` -- this will lock all your dependencies
