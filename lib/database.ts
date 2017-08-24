@@ -8,7 +8,7 @@ let dbInstance: Db
 export async function connect(
   mongoUri: string,
   isProduction = false,
-  connectionRetryWait = 2,
+  connectionRetryWait = 5,
   connectionRetryMax = 10,
   certFileUri?: string) {
 
@@ -38,7 +38,7 @@ export async function connect(
     } catch(ex) {
       retryAttempt++
       lastException = ex
-      console.log(ex)
+      console.log(ex.message)
       console.log(`${retryAttempt}: Retrying in ${connectionRetryWait}s...`)
       await sleep(connectionRetryWait)
     }
