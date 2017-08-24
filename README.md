@@ -7,6 +7,9 @@ A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Docu
 - Add DocumentTS to your project with `npm install --save document-ts`
 - Run `npm shrinkwrap` -- this will lock all your dependencies
 - Connect to your Mongo database using `connect()`
+- Connect will retry connecting to the database 10 times every 2 seconds
+  - Set `connectionRetryWait` and `connectionRetryMax` to modify this behavior
+- Specify `isProd` and `certFileUri` to connect using an SSL certificate
 
 ```js
 import { connect } from 'document-ts'
