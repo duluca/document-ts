@@ -30,16 +30,22 @@ export async function connect(
   }
 
   let retryAttempt = 0
+  let lastException
 
   while(retryAttempt < connectionRetryMax && !dbInstance) {
     try {
       dbInstance = await MongoClient.connect(mongoUri, mongoOptions)
     } catch(ex) {
       retryAttempt++
+      lastException = ex
       console.log(ex)
       console.log(`${retryAttempt}: Retrying in ${connectionRetryWait}s...`)
       await sleep(connectionRetryWait)
     }
+  }
+
+  if(!dbInstance) {
+    throw lastException
   }
 }
 
