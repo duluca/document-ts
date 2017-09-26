@@ -1,5 +1,5 @@
 import { DocumentException } from './documentException';
-import { Collection, ObjectID, CollectionInsertOneOptions, ReplaceOneOptions, DeleteWriteOpResultObject } from 'mongodb'
+import { ObjectID, CollectionInsertOneOptions, ReplaceOneOptions, DeleteWriteOpResultObject } from 'mongodb'
 import { remove as _remove, includes as _includes } from 'lodash'
 import { serialize, ISerializable, serializationStrategy } from './serializer'
 
