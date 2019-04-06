@@ -5,24 +5,25 @@ import { v4 as uuid } from 'uuid'
 var bcrypt = require('bcryptjs')
 
 export interface IUser extends IDocument {
-  email: string,
-  firstName: string,
-  lastName: string,
-  role: string
+  email?: string,
+  firstName?: string,
+  lastName?: string,
+  role?: string
 }
 
 export class User extends Document<IUser> implements IUser {
   static collectionName = 'users'
-
-  private password: string
-
-  public email: string
-  public firstName: string
-  public lastName: string
-  public role: string
+    public email: string;
+    public firstName: string;
+    public lastName: string;
+    public role: string;
 
   constructor(user?: IUser) {
-    super(User.collectionName, user)
+    super(User.collectionName, user);
+    this.email = user && user.email || '';
+    this.firstName = user && user.firstName || '';
+    this.lastName = user && user.lastName || '';
+    this.role = user && user.role || '';
   }
 
   getCalculatedPropertiesToInclude(): string[]{

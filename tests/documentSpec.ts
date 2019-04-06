@@ -38,7 +38,7 @@ describe('Document', function() {
 
     try {
       let user = new User()
-      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user');
     } catch (ex) {
       actualException = ex
     }

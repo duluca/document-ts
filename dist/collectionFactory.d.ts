@@ -18,7 +18,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     find(query: Object, fields?: Object, skip?: number, limit?: number, timeout?: number): Promise<TDocument[]>;
     hydrateObject(document: TDocument | undefined): TDocument | undefined;
     count(query: Object, options?: MongoCountPreferences): Promise<number>;
-    private tokenize(searchText);
+    private tokenize;
     buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object;
     buildQueryParameters(query?: any): IQueryParameters | undefined;
     sortKeyToObject(sortKey: string | Object): Object;
