@@ -109,9 +109,11 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return fieldsObject
   }
 
-  async find(query: Object, fields?: Object, skip?: number, limit?: number, timeout?: number ): Promise<TDocument[]> {
+  async find(query: Object, fields?: Object, skip?: number, limit?: number): Promise<TDocument[]> {
     let collection = this
-    let documents = this.collection().find(query, fields, skip, limit, timeout).toArray()
+    let documents = this.collection().find(query, fields)
+                    .skip(skip ? skip : 0)
+                    .limit(limit ? limit: 999999999).toArray()
     return bluebirdMap(documents, function(document) {
       return collection.hydrateObject(document) || collection.undefinedObject
     })

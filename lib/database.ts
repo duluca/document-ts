@@ -21,7 +21,8 @@ export async function connect(
       ssl: true,
       sslValidate: true,
       sslCA: certFileBuf,
-      poolSize: 1
+      poolSize: 1,
+      useNewUrlParser: true
     }
   }
 
@@ -34,7 +35,8 @@ export async function connect(
 
   while(retryAttempt < connectionRetryMax && !dbInstance) {
     try {
-      dbInstance = await MongoClient.connect(mongoUri, mongoOptions)
+      const client = await MongoClient.connect(mongoUri,  mongoOptions)
+      dbInstance = client.db();
     } catch(ex) {
       retryAttempt++
       lastException = ex

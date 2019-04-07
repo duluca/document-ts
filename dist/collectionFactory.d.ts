@@ -15,7 +15,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     getTotal(aggregationCursor?: AggregationCursor<TDocument>, query?: {}): Promise<number>;
     getCursor(query: string | Object, searchableProperties: string[]): Cursor<TDocument>;
     fieldsArrayToObject(fields: string[]): Object;
-    find(query: Object, fields?: Object, skip?: number, limit?: number, timeout?: number): Promise<TDocument[]>;
+    find(query: Object, fields?: Object, skip?: number, limit?: number): Promise<TDocument[]>;
     hydrateObject(document: TDocument | undefined): TDocument | undefined;
     count(query: Object, options?: MongoCountPreferences): Promise<number>;
     private tokenize;
