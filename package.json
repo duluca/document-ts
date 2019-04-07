@@ -46,6 +46,7 @@
     "@types/uuid": "^3.4.0",
     "bcryptjs": "^2.4.3",
     "jasmine": "^2.7.0",
+    "mongo-in-memory": "0.0.5",
     "mongodb": "^3.2.3",
     "rimraf": "^2.6.1",
     "typescript": "^3.4.2",
