@@ -201,3 +201,6 @@ Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definite
 
 - Run `npm install`
 - Run `npm test`
+
+### Maintainers
+* **[Kenton Bocock](https://github.com/kentonbmax)**
