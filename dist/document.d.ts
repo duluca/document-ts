@@ -1,6 +1,6 @@
-import { ObjectID, CollectionInsertOneOptions, ReplaceOneOptions, DeleteWriteOpResultObject } from 'mongodb';
-import { ISerializable } from './serializer';
+import { CollectionInsertOneOptions, DeleteWriteOpResultObject, ObjectID, ReplaceOneOptions } from 'mongodb';
 import { IDocument } from './interfaces';
+import { ISerializable } from './serializer';
 export declare abstract class Document<TDocument extends IDocument> implements IDocument, ISerializable {
     collectionName: string;
     '_id': ObjectID;

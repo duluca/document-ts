@@ -1,5 +1,5 @@
-import { AggregationCursor, Cursor, FindOneOptions, FindOneAndReplaceOption, MongoCountPreferences } from 'mongodb';
-import { ICollectionProvider, IFilter, IDocument, Func, IPaginationResult, IQueryParameters } from './interfaces';
+import { AggregationCursor, Cursor, FindOneAndReplaceOption, FindOneOptions, MongoCountPreferences } from 'mongodb';
+import { Func, ICollectionProvider, IDocument, IFilter, IPaginationResult, IQueryParameters } from './interfaces';
 export declare abstract class CollectionFactory<TDocument extends IDocument> {
     collectionName: string;
     private documentType;

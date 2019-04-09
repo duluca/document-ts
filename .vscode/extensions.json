@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "eamodio.gitlens",
+    "amatiasq.sort-imports",
+    "esbenp.prettier-vscode",
+  ]
+}

@@ -1,55 +1,62 @@
-import { IDocument, Document, CollectionFactory } from '../dist/index'
 import { ObjectID } from 'mongodb'
 import { v4 as uuid } from 'uuid'
+
+import { CollectionFactory, Document, IDocument } from '../dist/index'
 
 var bcrypt = require('bcryptjs')
 
 export interface IUser extends IDocument {
-  email?: string,
-  firstName?: string,
-  lastName?: string,
+  email?: string
+  firstName?: string
+  lastName?: string
   role?: string
 }
 
 export class User extends Document<IUser> implements IUser {
   static collectionName = 'users'
-    public email: string;
-    public firstName: string;
-    public lastName: string;
-    public role: string;
+  public email: string
+  public firstName: string
+  public lastName: string
+  public role: string
 
   constructor(user?: IUser) {
-    super(User.collectionName, user);
-    this.email = user && user.email || '';
-    this.firstName = user && user.firstName || '';
-    this.lastName = user && user.lastName || '';
-    this.role = user && user.role || '';
+    super(User.collectionName, user)
+    this.email = (user && user.email) || ''
+    this.firstName = (user && user.firstName) || ''
+    this.lastName = (user && user.lastName) || ''
+    this.role = (user && user.role) || ''
   }
 
-  getCalculatedPropertiesToInclude(): string[]{
-      return ['fullName']
+  getCalculatedPropertiesToInclude(): string[] {
+    return ['fullName']
   }
 
-  getPropertiesToExclude(): string[]{
-      return ['password']
+  getPropertiesToExclude(): string[] {
+    return ['password']
   }
 
   public get fullName(): string {
     return `${this.firstName} ${this.lastName}`
   }
 
-  async create(firstName: string, lastName: string, email: string, role: string, password?: string) {
-      this.firstName = firstName
-      this.lastName = lastName
-      this.email = email
-      this.role = role
+  async create(
+    firstName: string,
+    lastName: string,
+    email: string,
+    role: string,
+    password?: string
+  ) {
+    this.firstName = firstName
+    this.lastName = lastName
+    this.email = email
+    this.role = role
 
-      if(!password) {
-          password = uuid()
-      }
+    if (!password) {
+      password = uuid()
+    }
 
-      this.password = await this.setPassword(password)
-      await this.save()
+    this.password = await this.setPassword(password)
+    await this.save()
   }
 
   async resetPassword(newPassword: string) {
@@ -58,22 +65,28 @@ export class User extends Document<IUser> implements IUser {
   }
 
   private setPassword(newPassword: string): Promise<string> {
-    return new Promise<string>(function(resolve, reject){
-        bcrypt.genSalt(10, function(err, salt) {
-          if(err) { return reject(err) }
-          bcrypt.hash(newPassword, salt, function(err, hash) {
-            if(err) { return reject(err) }
-            resolve(hash)
-          })
+    return new Promise<string>(function(resolve, reject) {
+      bcrypt.genSalt(10, function(err, salt) {
+        if (err) {
+          return reject(err)
+        }
+        bcrypt.hash(newPassword, salt, function(err, hash) {
+          if (err) {
+            return reject(err)
+          }
+          resolve(hash)
         })
+      })
     })
   }
 
-  comparePassword(password): Promise<boolean>{
+  comparePassword(password): Promise<boolean> {
     let user = this
-    return new Promise(function(resolve, reject){
+    return new Promise(function(resolve, reject) {
       bcrypt.compare(password, user.password, function(err, isMatch) {
-        if(err) { return reject(err) }
+        if (err) {
+          return reject(err)
+        }
         resolve(isMatch)
       })
     })
@@ -85,9 +98,9 @@ export class User extends Document<IUser> implements IUser {
 }
 
 class UserCollectionFactory extends CollectionFactory<User> {
-    constructor(docType: typeof User) {
-        super(User.collectionName, docType, [ 'firstName', 'lastName', 'email' ])
-    }
+  constructor(docType: typeof User) {
+    super(User.collectionName, docType, ['firstName', 'lastName', 'email'])
+  }
 }
 
 export let UserCollection = new UserCollectionFactory(User)

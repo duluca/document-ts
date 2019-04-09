@@ -1,4 +1,4 @@
-import { ObjectID, Collection } from 'mongodb';
+import { Collection, ObjectID } from 'mongodb';
 export interface IDocument {
     _id: ObjectID;
     collectionName: string;

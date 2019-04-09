@@ -1,11 +1,11 @@
-'use strict';
+'use strict'
+
 import { Document, connect } from '../dist/index'
 import { User, UserCollection } from './user'
 
 const MongoInMemory = require('mongo-in-memory')
 
 describe('Document', function() {
-
   var mongoServerInstance
   const port = 28000
 
@@ -18,19 +18,19 @@ describe('Document', function() {
   })
 
   afterEach(done => {
-    mongoServerInstance.stop((error) => {
+    mongoServerInstance.stop(error => {
       done()
     })
   })
 
   it('should open a connection with a dummy database name', async done => {
-    let uri = mongoServerInstance.getMongouri("testDb")
+    let uri = mongoServerInstance.getMongouri('testDb')
     await connect(uri)
     done()
   })
 
   it('should store a user', async done => {
-    let uri = mongoServerInstance.getMongouri("testDb")
+    let uri = mongoServerInstance.getMongouri('testDb')
     await connect(uri)
 
     let expectedException = null
@@ -38,7 +38,7 @@ describe('Document', function() {
 
     try {
       let user = new User()
-      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user');
+      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
     } catch (ex) {
       actualException = ex
     }
@@ -48,43 +48,42 @@ describe('Document', function() {
   })
 
   it('should find a user', async done => {
-    let uri = mongoServerInstance.getMongouri("testDb")
+    let uri = mongoServerInstance.getMongouri('testDb')
     await connect(uri)
 
     var expectedFirstName = 'Doguhan'
 
     let user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({'lastName': 'Uluca'})
-
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
     done()
   })
 
   it('should find a user with fullName', async done => {
-    let uri = mongoServerInstance.getMongouri("testDb")
+    let uri = mongoServerInstance.getMongouri('testDb')
     await connect(uri)
 
     var expectedFullName = 'Doguhan Uluca'
 
     let user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({'lastName': 'Uluca'})
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFullName).toEqual(foundUser.fullName)
     done()
   })
 
   it('should find a user with password', async done => {
-    let uri = mongoServerInstance.getMongouri("testDb")
+    let uri = mongoServerInstance.getMongouri('testDb')
     await connect(uri)
 
     var expectedPassword = 'acme'
 
     let user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', 'acme')
-    let foundUser = await UserCollection.findOne({'lastName': 'Uluca'})
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     let isMatch = await foundUser.comparePassword(expectedPassword)
 

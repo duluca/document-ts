@@ -1,7 +1,8 @@
 'use strict'
 
 import { readFileSync } from 'fs'
-import { MongoClient, MongoClientOptions, Db } from 'mongodb'
+
+import { Db, MongoClient, MongoClientOptions } from 'mongodb'
 
 let dbInstance: Db
 
@@ -10,11 +11,11 @@ export async function connect(
   isProduction = false,
   connectionRetryWait = 5,
   connectionRetryMax = 10,
-  certFileUri?: string) {
-
+  certFileUri?: string
+) {
   let mongoOptions: MongoClientOptions = {}
 
-  if(certFileUri) {
+  if (certFileUri) {
     let certFileBuf = [readFileSync(certFileUri)]
 
     mongoOptions = {
@@ -22,22 +23,22 @@ export async function connect(
       sslValidate: true,
       sslCA: certFileBuf,
       poolSize: 1,
-      useNewUrlParser: true
+      useNewUrlParser: true,
     }
   }
 
-  if(isProduction === false) {
+  if (isProduction === false) {
     mongoOptions = {}
   }
 
   let retryAttempt = 0
   let lastException
 
-  while(retryAttempt < connectionRetryMax && !dbInstance) {
+  while (retryAttempt < connectionRetryMax && !dbInstance) {
     try {
-      const client = await MongoClient.connect(mongoUri,  mongoOptions)
-      dbInstance = client.db();
-    } catch(ex) {
+      const client = await MongoClient.connect(mongoUri, mongoOptions)
+      dbInstance = client.db()
+    } catch (ex) {
       retryAttempt++
       lastException = ex
       console.log(ex.message)
@@ -46,17 +47,17 @@ export async function connect(
     }
   }
 
-  if(!dbInstance) {
+  if (!dbInstance) {
     throw lastException
   }
 }
 
 function sleep(seconds: number) {
-  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000))
 }
 
 export function getDbInstance(): Db {
-  if(!dbInstance) {
+  if (!dbInstance) {
     throw 'Database is not yet instantiated'
   }
   return dbInstance
