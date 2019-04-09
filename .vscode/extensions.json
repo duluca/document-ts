@@ -3,5 +3,6 @@
     "eamodio.gitlens",
     "amatiasq.sort-imports",
     "esbenp.prettier-vscode",
+    "github.vscode-pull-request-github"
   ]
 }
