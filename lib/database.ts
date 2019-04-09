@@ -1,41 +1,45 @@
 'use strict'
 
 import { readFileSync } from 'fs'
-import { MongoClient, MongoClientOptions, Db } from 'mongodb'
 
-let dbInstance: Db
+import { Db, MongoClient, MongoClientOptions } from 'mongodb'
+
+let dbInstance: Db | null
+let mongoClient: MongoClient
 
 export async function connect(
   mongoUri: string,
   isProduction = false,
   connectionRetryWait = 5,
   connectionRetryMax = 10,
-  certFileUri?: string) {
+  certFileUri?: string
+) {
+  let mongoOptions: MongoClientOptions = { useNewUrlParser: true }
 
-  let mongoOptions: MongoClientOptions = {}
-
-  if(certFileUri) {
+  if (certFileUri) {
     let certFileBuf = [readFileSync(certFileUri)]
 
     mongoOptions = {
       ssl: true,
       sslValidate: true,
       sslCA: certFileBuf,
-      poolSize: 1
+      poolSize: 1,
+      useNewUrlParser: true,
     }
   }
 
-  if(isProduction === false) {
-    mongoOptions = {}
+  if (isProduction === false) {
+    mongoOptions = { useNewUrlParser: true }
   }
 
   let retryAttempt = 0
   let lastException
 
-  while(retryAttempt < connectionRetryMax && !dbInstance) {
+  while (retryAttempt < connectionRetryMax && !dbInstance) {
     try {
-      dbInstance = await MongoClient.connect(mongoUri, mongoOptions)
-    } catch(ex) {
+      mongoClient = await MongoClient.connect(mongoUri, mongoOptions)
+      dbInstance = mongoClient.db()
+    } catch (ex) {
       retryAttempt++
       lastException = ex
       console.log(ex.message)
@@ -44,17 +48,24 @@ export async function connect(
     }
   }
 
-  if(!dbInstance) {
+  if (!dbInstance) {
     throw lastException
   }
 }
 
 function sleep(seconds: number) {
-  return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+  return new Promise(resolve => setTimeout(resolve, seconds * 1000))
+}
+
+export async function close(force = false) {
+  if (mongoClient) {
+    await mongoClient.close(force)
+    dbInstance = null
+  }
 }
 
 export function getDbInstance(): Db {
-  if(!dbInstance) {
+  if (!dbInstance) {
     throw 'Database is not yet instantiated'
   }
   return dbInstance

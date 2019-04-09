@@ -5,6 +5,6 @@ export interface ISerializable {
 }
 export declare enum serializationStrategy {
     toJSON = 0,
-    toBSON = 1,
+    toBSON = 1
 }
 export declare function serialize(strategy: serializationStrategy, document: ISerializable, keys?: string[]): Object;

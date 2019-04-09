@@ -1,18 +1,18 @@
-import { ObjectID, CollectionInsertOneOptions, ReplaceOneOptions, DeleteWriteOpResultObject } from 'mongodb';
-import { ISerializable } from './serializer';
+import { CollectionInsertOneOptions, DeleteWriteOpResultObject, ObjectID, ReplaceOneOptions } from 'mongodb';
 import { IDocument } from './interfaces';
+import { ISerializable } from './serializer';
 export declare abstract class Document<TDocument extends IDocument> implements IDocument, ISerializable {
     collectionName: string;
-    _id: ObjectID;
+    '_id': ObjectID;
     [index: string]: any;
     constructor(collectionName: string, document?: TDocument);
     protected abstract getCalculatedPropertiesToInclude(): string[];
     protected abstract getPropertiesToExclude(): string[];
     protected fillData(data: any): void;
-    private hasObjectId();
+    private hasObjectId;
     save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean>;
     delete(): Promise<DeleteWriteOpResultObject>;
-    private fieldsToSerialize(excludes?, includes?);
+    private fieldsToSerialize;
     toJSON(): Object;
     toBSON(): Object;
 }

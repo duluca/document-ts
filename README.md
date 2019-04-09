@@ -1,9 +1,13 @@
+[![CircleCI](https://circleci.com/gh/duluca/DocumentTS.svg?style=svg)](https://circleci.com/gh/duluca/DocumentTS)
+
 # DocumentTS
+
 A very thin TypeScript based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
 ## Quick Start
+
 - Add DocumentTS to your project with `npm install --save document-ts`
 - Run `npm shrinkwrap` -- this will lock all your dependencies
 - Connect to your Mongo database using `connect()`
@@ -29,35 +33,36 @@ import { getDbInstance } from 'document-ts'
 
 // assuming this is called within an async function
 await dbInstance.collection('users').createIndexes([
-    {
-      key: {
-        displayName: 1
-      }
+  {
+    key: {
+      displayName: 1,
     },
-    {
-      key: {
-        email: 1
-      },
-      unique: true
-    }
-  ])
+  },
+  {
+    key: {
+      email: 1,
+    },
+    unique: true,
+  },
+])
 ```
 
 - Define the interface for your first model
-> See `tests\user.ts` for sample Model implementation
+  > See `tests\user.ts` for sample Model implementation
 
 ```js
 import { IDocument } from 'document-ts'
 
 export interface IUser extends IDocument {
-  email: string,
-  firstName: string,
-  lastName: string,
-  role: string
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
 }
 ```
+
 - Define the class for your model
-> See `tests\user.ts` for sample Model implementation
+  > See `tests\user.ts` for sample Model implementation
 
 ```js
 import { Document } from 'document-ts'
@@ -98,15 +103,15 @@ export class User extends Document<IUser> implements IUser {
 - Implement the `CollectionFactory` class, so that you can run Mongo queries without having to call `getDbInstance` or specify the collection and TypeScript type name every time you run a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
 
 ```js
-  import { CollectionFactory } from 'document-ts'
+import { CollectionFactory } from 'document-ts'
 
-  class UserCollectionFactory extends CollectionFactory<User> {
-      constructor(docType: typeof User) {
-          super(User.collectionName, docType, [ 'firstName', 'lastName', 'email' ])
-      }
+class UserCollectionFactory extends CollectionFactory<User> {
+  constructor(docType: typeof User) {
+    super(User.collectionName, docType, ['firstName', 'lastName', 'email'])
   }
+}
 
-  export let UserCollection = new UserCollectionFactory(User)
+export let UserCollection = new UserCollectionFactory(User)
 ```
 
 - `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
@@ -145,6 +150,7 @@ export class User extends Document<IUser> implements IUser {
 See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
 
 ## Features
+
 - `connect()`
   _MongoDB async connection harness_
   It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
@@ -153,6 +159,7 @@ See the Minimal MEAN sample project for usage - https://github.com/excellalabs/m
   ...
 
 ## Goals
+
 - Reliable
   - Rely on the rock-solid Native Node.js MongoDB drivers
   - Don't inject custom code into DB calls without explicit intent by the developer
@@ -175,13 +182,17 @@ See the Minimal MEAN sample project for usage - https://github.com/excellalabs/m
   - Be very selective about any new features
 
 ## What It Isn't
+
 Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can developer directly against MongoDB while enjoying some conveniences as you choose.
 
 ## Inspirations
+
 Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definitely is inspired by them in the way they've solved certain problems such as hydration. Check out the source code for those projects here:
+
 - Mongoose
 - [Camo](https://github.com/scottwrobinson/camo)
 
 ## Building This Project
+
 - Run `npm install`
 - Run `npm test`
