@@ -171,9 +171,9 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   private tokenize(searchText: string): RegExp {
-    var splitValues = searchText.split(' ').filter(val => typeof val === 'string')
+    const splitValues = searchText.split(' ').filter(val => typeof val === 'string')
 
-    if (!splitValues) {
+    if (splitValues && splitValues.length === 0) {
       return /.*/
     }
 

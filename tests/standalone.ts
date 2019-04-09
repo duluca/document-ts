@@ -1,6 +1,4 @@
-import { ObjectID } from 'mongodb'
-
-import { Document, connect } from '../dist/index'
+import { connect } from '../dist/index'
 import { User, UserCollection } from './user'
 
 async function doWork() {
