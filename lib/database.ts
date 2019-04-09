@@ -4,7 +4,8 @@ import { readFileSync } from 'fs'
 
 import { Db, MongoClient, MongoClientOptions } from 'mongodb'
 
-let dbInstance: Db
+let dbInstance: Db | null
+let mongoClient: MongoClient
 
 export async function connect(
   mongoUri: string,
@@ -36,8 +37,8 @@ export async function connect(
 
   while (retryAttempt < connectionRetryMax && !dbInstance) {
     try {
-      const client = await MongoClient.connect(mongoUri, mongoOptions)
-      dbInstance = client.db()
+      mongoClient = await MongoClient.connect(mongoUri, mongoOptions)
+      dbInstance = mongoClient.db()
     } catch (ex) {
       retryAttempt++
       lastException = ex
@@ -54,6 +55,13 @@ export async function connect(
 
 function sleep(seconds: number) {
   return new Promise(resolve => setTimeout(resolve, seconds * 1000))
+}
+
+export async function close(force = false) {
+  if (mongoClient) {
+    await mongoClient.close(force)
+    dbInstance = null
+  }
 }
 
 export function getDbInstance(): Db {

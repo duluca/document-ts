@@ -2,24 +2,25 @@
 
 import MongoMemoryServer from 'mongodb-memory-server'
 
-import { connect } from '../dist/index'
+import { close, connect } from '../dist/index'
 import { User, UserCollection } from './user'
 
-describe('Document', function() {
-  let mongoServerInstance: MongoMemoryServer
+let mongoServerInstance: MongoMemoryServer
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
+describe('Document', function() {
   beforeEach(async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
     mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
     const uri = await mongoServerInstance.getConnectionString()
     await connect(uri)
   })
 
   afterEach(async () => {
+    await close()
     await mongoServerInstance.stop()
   })
 
-  it('should store a user', async done => {
+  it('should store a user', async () => {
     const expectedException = null
     let actualException = null
 
@@ -31,7 +32,6 @@ describe('Document', function() {
     }
 
     expect(expectedException).toEqual(actualException)
-    done()
   })
 
   it('should find a user', async () => {
