@@ -1,12 +1,12 @@
 {
   "name": "document-ts",
   "version": "3.2.3",
-  "description": "Very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
+  "description": "A very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "standardize": "import-sort --write \"**/*.ts\" && prettier --write \"**/*.ts\"",
-    "build": "rimraf ./dist && npm run standardize && tsc",
+    "build": "tsc",
     "build:test": "tsc -p tests",
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",
@@ -40,9 +40,9 @@
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.26",
-    "@types/jasmine": "^2.8.16",
+    "@types/jasmine": "^3.3.12",
     "@types/lodash": "^4.14.123",
-    "@types/mongodb": "3.1.0",
+    "@types/mongodb": "^3.1.0",
     "@types/uuid": "^3.4.4",
     "bcryptjs": "^2.4.3",
     "cross-conf-env": "^1.1.2",
@@ -51,9 +51,9 @@
     "import-sort-cli": "^6.0.0",
     "import-sort-parser-typescript": "^6.0.0",
     "import-sort-style-module": "^6.0.0",
-    "jasmine": "^2.99.0",
-    "mongo-in-memory": "0.0.5",
+    "jasmine": "^3.4.0",
     "mongodb": "^3.2.3",
+    "mongodb-memory-server": "^4.2.2",
     "prettier": "^1.16.4",
     "rimraf": "^2.6.3",
     "typescript": "^3.4.2",
@@ -71,7 +71,6 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "es5",
-    "parser": "typescript",
-    "jsxBracketSameLine": true
+    "parser": "typescript"
   }
 }

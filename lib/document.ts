@@ -47,7 +47,7 @@ export abstract class Document<TDocument extends IDocument>
       try {
         let result = await getDbInstance()
           .collection(this.collectionName)
-          .insert(this, options)
+          .insertOne(this, options)
 
         if (result.insertedCount > 0) {
           this.fillData(result.ops[0])

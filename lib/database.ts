@@ -13,7 +13,7 @@ export async function connect(
   connectionRetryMax = 10,
   certFileUri?: string
 ) {
-  let mongoOptions: MongoClientOptions = {}
+  let mongoOptions: MongoClientOptions = { useNewUrlParser: true }
 
   if (certFileUri) {
     let certFileBuf = [readFileSync(certFileUri)]
@@ -28,7 +28,7 @@ export async function connect(
   }
 
   if (isProduction === false) {
-    mongoOptions = {}
+    mongoOptions = { useNewUrlParser: true }
   }
 
   let retryAttempt = 0

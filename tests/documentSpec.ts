@@ -1,39 +1,26 @@
 'use strict'
 
-import { Document, connect } from '../dist/index'
+import MongoMemoryServer from 'mongodb-memory-server'
+
+import { connect } from '../dist/index'
 import { User, UserCollection } from './user'
 
-const MongoInMemory = require('mongo-in-memory')
-
 describe('Document', function() {
-  var mongoServerInstance
-  const port = 28000
+  let mongoServerInstance: MongoMemoryServer
 
-  beforeEach(done => {
+  beforeEach(async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
-    mongoServerInstance = new MongoInMemory(port)
-    mongoServerInstance.start((error, config) => {
-      done()
-    })
-  })
-
-  afterEach(done => {
-    mongoServerInstance.stop(error => {
-      done()
-    })
-  })
-
-  it('should open a connection with a dummy database name', async done => {
-    let uri = mongoServerInstance.getMongouri('testDb')
+    mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
+    const uri = await mongoServerInstance.getConnectionString()
     await connect(uri)
-    done()
+  })
+
+  afterEach(async () => {
+    await mongoServerInstance.stop()
   })
 
   it('should store a user', async done => {
-    let uri = mongoServerInstance.getMongouri('testDb')
-    await connect(uri)
-
-    let expectedException = null
+    const expectedException = null
     let actualException = null
 
     try {
@@ -47,39 +34,28 @@ describe('Document', function() {
     done()
   })
 
-  it('should find a user', async done => {
-    let uri = mongoServerInstance.getMongouri('testDb')
-    await connect(uri)
-
-    var expectedFirstName = 'Doguhan'
+  it('should find a user', async () => {
+    const expectedFirstName = 'Doguhan'
 
     let user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
     let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
-    done()
   })
 
-  it('should find a user with fullName', async done => {
-    let uri = mongoServerInstance.getMongouri('testDb')
-    await connect(uri)
-
-    var expectedFullName = 'Doguhan Uluca'
+  it('should find a user with fullName', async () => {
+    const expectedFullName = 'Doguhan Uluca'
 
     let user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
     let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFullName).toEqual(foundUser.fullName)
-    done()
   })
 
-  it('should find a user with password', async done => {
-    let uri = mongoServerInstance.getMongouri('testDb')
-    await connect(uri)
-
-    var expectedPassword = 'acme'
+  it('should find a user with password', async () => {
+    const expectedPassword = 'acme'
 
     let user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', 'acme')
@@ -88,6 +64,5 @@ describe('Document', function() {
     let isMatch = await foundUser.comparePassword(expectedPassword)
 
     expect(isMatch).toBeTruthy()
-    done()
   })
 })
