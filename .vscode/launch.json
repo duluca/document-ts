@@ -19,6 +19,15 @@
       "name": "Attach to Process",
       "port": 5858,
       "outFiles": []
+    },
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Jasmine Individual Test",
+        "program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
+        "args": [
+            "tests\\documentSpec.js"
+        ],
     }
   ]
 }

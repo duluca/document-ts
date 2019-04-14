@@ -225,12 +225,6 @@
       "integrity": "sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==",
       "dev": true
     },
-    "@types/bluebird": {
-      "version": "3.5.26",
-      "resolved": "https://registry.npmjs.org/@types/bluebird/-/bluebird-3.5.26.tgz",
-      "integrity": "sha512-aj2mrBLn5ky0GmAg6IPXrQjnN0iB/ulozuJ+oZdrHRAzRbXjGmu4UXsNCjFvPbSaaPZmniocdOzsM392qLOlmQ==",
-      "dev": true
-    },
     "@types/bson": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/@types/bson/-/bson-4.0.0.tgz",
@@ -261,12 +255,6 @@
       "version": "3.3.12",
       "resolved": "https://registry.npmjs.org/@types/jasmine/-/jasmine-3.3.12.tgz",
       "integrity": "sha512-lXvr2xFQEVQLkIhuGaR3GC1L9lMU1IxeWnAF/wNY5ZWpC4p9dgxkKkzMp7pntpAdv9pZSnYqgsBkCg32MXSZMg==",
-      "dev": true
-    },
-    "@types/lodash": {
-      "version": "4.14.123",
-      "resolved": "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.123.tgz",
-      "integrity": "sha512-pQvPkc4Nltyx7G1Ww45OjVqUsJP4UsZm+GWJpigXgkikZqJgRm4c48g027o6tdgubWHwFRF15iFd+Y4Pmqv6+Q==",
       "dev": true
     },
     "@types/minimatch": {

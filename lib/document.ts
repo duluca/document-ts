@@ -1,4 +1,4 @@
-import { includes as _includes, remove as _remove } from 'lodash'
+
 import {
   CollectionInsertOneOptions,
   DeleteWriteOpResultObject,
@@ -76,9 +76,12 @@ export abstract class Document<TDocument extends IDocument>
 
     excludes = defaultExcludes.concat(excludes)
 
-    let keys = _remove(Object.keys(document), function(key) {
-      return !_includes(excludes, key)
-    })
+    let keys = new Array()
+    Object.keys(document).forEach((item) => {
+      if (!(excludes.indexOf(item) > -1)) {
+        keys.push(item)
+      }
+    });
     return keys.concat(includes)
   }
 
