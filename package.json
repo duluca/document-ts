@@ -31,10 +31,7 @@
     "url": "https://github.com/duluca/DocumentTS/issues"
   },
   "homepage": "https://github.com/duluca/DocumentTS#readme",
-  "dependencies": {
-    "bluebird": "^3.5.4",
-    "lodash": "^4.17.11"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "mongodb": "^3.2.3"
   },
