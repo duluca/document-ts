@@ -1,4 +1,4 @@
-import { uniq as _uniq } from 'lodash'
+
 
 export interface ISerializable {
   toJSON(): Object
@@ -22,7 +22,7 @@ export function serialize(
   } else if (!keys) {
     return {}
   }
-  keys = _uniq(keys)
+  keys = Array.from(new Set(keys))
   let serializationTarget: { [index: string]: any } = {}
   for (let key of keys) {
     let child = document[key]

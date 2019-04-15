@@ -1,5 +1,4 @@
-import { map as bluebirdMap } from 'bluebird'
-import { each as _each, map as _map } from 'lodash'
+
 import {
   AggregationCursor,
   Cursor,
@@ -98,12 +97,12 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       cursor = this.getCursor(query, searchableProperties || this.searchableProperties)
     }
 
-    let documents = this.buildQuery(cursor, options).toArray()
+    let documents = await this.buildQuery(cursor, options).toArray()
 
     return {
-      data: await bluebirdMap(documents, function(document: TDocument) {
+      data: await Promise.all(documents.map((document: TDocument) => {
         return hydrate ? collection.hydrateObject(document) : document
-      }),
+      })),
       total: await this.getTotal(totalCursor, query),
     }
   }
@@ -135,7 +134,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   fieldsArrayToObject(fields: string[]): Object {
     let fieldsObject: IFilter = {}
 
-    _each(fields, function(field) {
+    fields.forEach(field => {
       fieldsObject[field] = 1
     })
 
@@ -149,14 +148,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     limit?: number
   ): Promise<TDocument[]> {
     let collection = this
-    let documents = this.collection()
+    let documents = await this.collection()
       .find(query, fields)
       .skip(skip ? skip : 0)
       .limit(limit ? limit : 999999999)
       .toArray()
-    return bluebirdMap(documents, function(document) {
+    return Promise.all(documents.map((document) => {
       return collection.hydrateObject(document) || collection.undefinedObject
-    })
+    }))
   }
 
   hydrateObject(document: TDocument | undefined): TDocument | undefined {
@@ -183,7 +182,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
 
   buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object {
     let that = this
-    let query = _map(searchableProperties, function(property: string) {
+    let query = searchableProperties.map((property: string) =>{
       let obj: any = {}
       obj[property] = that.tokenize(filter)
       return obj
@@ -234,7 +233,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     } else if (!Array.isArray(sortKeyOrList)) {
       return [sortKeyOrList]
     } else {
-      return _map(sortKeyOrList, key => this.sortKeyToObject(key))
+      return sortKeyOrList.map(key => this.sortKeyToObject(key))
     }
   }
 

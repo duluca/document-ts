@@ -1,6 +1,6 @@
 {
   "name": "document-ts",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,17 +31,12 @@
     "url": "https://github.com/duluca/DocumentTS/issues"
   },
   "homepage": "https://github.com/duluca/DocumentTS#readme",
-  "dependencies": {
-    "bluebird": "^3.5.4",
-    "lodash": "^4.17.11"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "mongodb": "^3.2.3"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.26",
     "@types/jasmine": "^3.3.12",
-    "@types/lodash": "^4.14.123",
     "@types/mongodb": "^3.1.0",
     "@types/uuid": "^3.4.4",
     "bcryptjs": "^2.4.3",

@@ -64,6 +64,13 @@ export async function close(force = false) {
   }
 }
 
+export function connectionStatus() {
+  if (mongoClient) {
+    return mongoClient.isConnected()
+  }
+  return false;
+}
+
 export function getDbInstance(): Db {
   if (!dbInstance) {
     throw 'Database is not yet instantiated'
