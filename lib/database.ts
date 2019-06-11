@@ -1,5 +1,3 @@
-'use strict'
-
 import { readFileSync } from 'fs'
 
 import { Db, MongoClient, MongoClientOptions } from 'mongodb'
@@ -68,7 +66,7 @@ export function connectionStatus() {
   if (mongoClient) {
     return mongoClient.isConnected()
   }
-  return false;
+  return false
 }
 
 export function getDbInstance(): Db {

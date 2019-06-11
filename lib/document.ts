@@ -1,4 +1,3 @@
-
 import {
   CollectionInsertOneOptions,
   DeleteWriteOpResultObject,
@@ -77,11 +76,11 @@ export abstract class Document<TDocument extends IDocument>
     excludes = defaultExcludes.concat(excludes)
 
     let keys = new Array()
-    Object.keys(document).forEach((item) => {
+    Object.keys(document).forEach(item => {
       if (!(excludes.indexOf(item) > -1)) {
         keys.push(item)
       }
-    });
+    })
     return keys.concat(includes)
   }
 

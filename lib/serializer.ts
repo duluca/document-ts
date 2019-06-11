@@ -1,5 +1,3 @@
-
-
 export interface ISerializable {
   toJSON(): Object
   toBSON(): Object
