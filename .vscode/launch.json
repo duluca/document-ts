@@ -21,13 +21,16 @@
       "outFiles": []
     },
     {
-        "type": "node",
-        "request": "launch",
-        "name": "Jasmine Individual Test",
-        "program": "${workspaceRoot}\\node_modules\\jasmine\\bin\\jasmine.js",
-        "args": [
-            "tests\\documentSpec.js"
-        ],
+      "type": "node",
+      "request": "launch",
+      "name": "Jasmine Individual Test",
+      "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
+      "args": [
+        "tests/documentSpec.js"
+      ],
+      "env": {
+        "NODE_PATH": "."
+      }
     }
   ]
 }

@@ -1,4 +1,3 @@
-
 import {
   AggregationCursor,
   Cursor,
@@ -100,9 +99,11 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     let documents = await this.buildQuery(cursor, options).toArray()
 
     return {
-      data: await Promise.all(documents.map((document: TDocument) => {
-        return hydrate ? collection.hydrateObject(document) : document
-      })),
+      data: await Promise.all(
+        documents.map((document: TDocument) => {
+          return hydrate ? collection.hydrateObject(document) : document
+        })
+      ),
       total: await this.getTotal(totalCursor, query),
     }
   }
@@ -153,9 +154,11 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       .skip(skip ? skip : 0)
       .limit(limit ? limit : 999999999)
       .toArray()
-    return Promise.all(documents.map((document) => {
-      return collection.hydrateObject(document) || collection.undefinedObject
-    }))
+    return Promise.all(
+      documents.map(document => {
+        return collection.hydrateObject(document) || collection.undefinedObject
+      })
+    )
   }
 
   hydrateObject(document: TDocument | undefined): TDocument | undefined {
@@ -182,7 +185,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
 
   buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object {
     let that = this
-    let query = searchableProperties.map((property: string) =>{
+    let query = searchableProperties.map((property: string) => {
       let obj: any = {}
       obj[property] = that.tokenize(filter)
       return obj

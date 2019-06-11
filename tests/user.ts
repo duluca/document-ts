@@ -1,9 +1,8 @@
+import * as bcrypt from 'bcryptjs'
 import { ObjectID } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 
 import { CollectionFactory, Document, IDocument } from '../dist/index'
-
-var bcrypt = require('bcryptjs')
 
 export interface IUser extends IDocument {
   email?: string
@@ -14,6 +13,7 @@ export interface IUser extends IDocument {
 
 export class User extends Document<IUser> implements IUser {
   static collectionName = 'users'
+  private password = ''
   public email: string
   public firstName: string
   public lastName: string
@@ -80,7 +80,7 @@ export class User extends Document<IUser> implements IUser {
     })
   }
 
-  comparePassword(password): Promise<boolean> {
+  comparePassword(password: string): Promise<boolean> {
     let user = this
     return new Promise(function(resolve, reject) {
       bcrypt.compare(password, user.password, function(err, isMatch) {
