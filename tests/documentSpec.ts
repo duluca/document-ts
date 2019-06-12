@@ -54,12 +54,14 @@ describe('Document', function() {
     expect(expectedFullName).toEqual(foundUser.fullName)
   })
 
-  xit('should find a user with password', async () => {
+  it('should find a user with password', async () => {
     const expectedPassword = 'acme'
 
     let user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', 'acme')
     let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    expect(foundUser).toBeDefined()
 
     let isMatch = await foundUser.comparePassword(expectedPassword)
 
