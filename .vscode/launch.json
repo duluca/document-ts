@@ -23,10 +23,22 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jasmine Individual Test",
+      "name": "Jasmine documentSpec Test",
       "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
       "args": [
         "tests/documentSpec.js"
+      ],
+      "env": {
+        "NODE_PATH": "."
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Jasmine collectionFactorySpec Test",
+      "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
+      "args": [
+        "tests/collectionFactorySpec.js"
       ],
       "env": {
         "NODE_PATH": "."

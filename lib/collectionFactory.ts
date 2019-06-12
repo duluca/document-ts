@@ -17,6 +17,7 @@ import {
   IQueryParameters,
 } from './interfaces'
 
+// (type: { new (): T })
 export abstract class CollectionFactory<TDocument extends IDocument> {
   constructor(
     public collectionName: string,
@@ -40,17 +41,13 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   protected get undefinedObject(): TDocument {
-    //TODO: how to detect this as undefined?
     return <TDocument>new this.documentType()
   }
 
   async findOne(filter: IFilter, options?: FindOneOptions): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOne(filter, options)
-    if (document) {
-      return <TDocument>new this.documentType(document)
-    }
-    return this.undefinedObject
+    return this.hydrateObject(document) || this.undefinedObject
   }
 
   async findOneAndUpdate(
@@ -161,9 +158,13 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     )
   }
 
-  hydrateObject(document: TDocument | undefined): TDocument | undefined {
-    if (document) {
-      return <TDocument>new this.documentType(document)
+  hydrateObject(document: any): TDocument | undefined {
+    if (document && document instanceof this.documentType) {
+      return document
+    } else if (document) {
+      const newDocument = <TDocument>new this.documentType()
+      Object.assign(newDocument, document)
+      return newDocument
     }
     return undefined
   }
