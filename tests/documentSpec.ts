@@ -34,6 +34,44 @@ describe('Document', function() {
     expect(expectedException).toEqual(actualException)
   })
 
+  it('should store multiple users', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      for (let i = 0; i < 5; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+  })
+
+  it('should hydrate multiple users', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      for (let i = 0; i < 5; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+
+      for (let i = 0; i < 5; i++) {
+        let foundUser = await UserCollection.findOne({ lastName: `${i}` })
+        const expectedFullName = `${i} ${i}`
+        expect(expectedFullName).toEqual(foundUser.fullName)
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+  })
+
   it('should find a user', async () => {
     const expectedFirstName = 'Doguhan'
 
