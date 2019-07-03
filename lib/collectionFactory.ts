@@ -144,17 +144,12 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     skip?: number,
     limit?: number
   ): Promise<TDocument[]> {
-    let collection = this
-    let documents = await this.collection()
+    return await this.collection()
       .find(query, fields)
       .skip(skip ? skip : 0)
-      .limit(limit ? limit : 999999999)
+      .limit(limit ? limit : Number.MAX_SAFE_INTEGER)
+      .map(document => this.hydrateObject(document) || this.undefinedObject)
       .toArray()
-    return Promise.all(
-      documents.map(document => {
-        return collection.hydrateObject(document) || collection.undefinedObject
-      })
-    )
   }
 
   hydrateObject(document: any): TDocument | undefined {
