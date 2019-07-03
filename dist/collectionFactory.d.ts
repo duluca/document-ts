@@ -11,7 +11,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     protected readonly undefinedObject: TDocument;
     findOne(filter: IFilter, options?: FindOneOptions): Promise<TDocument>;
     findOneAndUpdate(filter: IFilter, update: Object, options?: FindOneAndReplaceOption): Promise<TDocument>;
-    findWithPagination(queryParams: Object, aggregationCursor?: Func<AggregationCursor<TDocument>>, query?: string | Object, searchableProperties?: string[], hydrate?: boolean): Promise<IPaginationResult<any>>;
+    findWithPagination(queryParams: Object, aggregationCursor?: Func<AggregationCursor<TDocument>>, query?: string | Object, searchableProperties?: string[], hydrate?: boolean): Promise<IPaginationResult<TDocument>>;
     getTotal(aggregationCursor?: AggregationCursor<TDocument>, query?: {}): Promise<number>;
     getCursor(query: string | Object, searchableProperties: string[]): Cursor<TDocument>;
     fieldsArrayToObject(fields: string[]): Object;

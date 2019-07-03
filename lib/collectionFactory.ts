@@ -17,7 +17,6 @@ import {
   IQueryParameters,
 } from './interfaces'
 
-// (type: { new (): T })
 export abstract class CollectionFactory<TDocument extends IDocument> {
   constructor(
     public collectionName: string,
@@ -66,7 +65,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     query?: string | Object,
     searchableProperties?: string[],
     hydrate = false
-  ): Promise<IPaginationResult<any>> {
+  ): Promise<IPaginationResult<TDocument>> {
     let collection = this
 
     let options = this.buildQueryParameters(queryParams)

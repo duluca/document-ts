@@ -72,6 +72,63 @@ describe('Document', function() {
     expect(expectedException).toEqual(actualException)
   })
 
+  it('should store a user', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      let user = new User()
+      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+  })
+
+  it('should find with pagination', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.findWithPagination({ skip: 10, limit: 10 })
+    expect(expectedRecordCount).toBe(results.total)
+    expect(results.data.length).toBe(10)
+    expect(results.data[0].firstName).toBe('10')
+  })
+
+  it('should find with pagination using simple find', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.find({}, null, 10, 10)
+    expect(results.length).toBe(10)
+    expect(results[0].firstName).toBe('10')
+  })
+
   it('should find a user', async () => {
     const expectedFirstName = 'Doguhan'
 

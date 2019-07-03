@@ -16,7 +16,7 @@ export interface IQueryParameters {
     sortKeyOrList?: string | Object[] | Object;
 }
 export interface IPaginationResult<TDocument extends IDocument> {
-    data: TDocument[];
+    data: (TDocument | undefined)[];
     total: number;
 }
 export interface IFilter {
