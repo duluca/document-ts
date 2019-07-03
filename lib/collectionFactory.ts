@@ -169,7 +169,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   async count(query: Object, options?: MongoCountPreferences): Promise<number> {
-    return await this.collection().count(query, options)
+    return await this.collection().countDocuments(query, options)
   }
 
   private tokenize(searchText: string): RegExp {
