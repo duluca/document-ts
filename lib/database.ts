@@ -33,6 +33,10 @@ export async function connect(
   let retryAttempt = 0
   let lastException
 
+  if (!connectionRetryMax) {
+    connectionRetryMax = 1
+  }
+
   while (retryAttempt < connectionRetryMax && !dbInstance) {
     try {
       mongoClient = await MongoClient.connect(mongoUri, mongoOptions)
@@ -41,13 +45,20 @@ export async function connect(
       retryAttempt++
       lastException = ex
       console.log(ex.message)
-      console.log(`${retryAttempt}: Retrying in ${connectionRetryWait}s...`)
-      await sleep(connectionRetryWait)
+      if (connectionRetryWait) {
+        console.log(`${retryAttempt}: Retrying in ${connectionRetryWait}s...`)
+        await sleep(connectionRetryWait)
+      }
     }
   }
 
   if (!dbInstance) {
-    throw lastException
+    if (!lastException) {
+      throw new Error(
+        'Unable to connect to the database, please verify that your configuration is correct'
+      )
+    }
+    throw new Error(lastException)
   }
 }
 

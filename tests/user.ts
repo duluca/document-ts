@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs'
-import { ObjectID } from 'mongodb'
+import { AggregationCursor, ObjectID } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 
 import { CollectionFactory, Document, IDocument } from '../dist/index'
@@ -100,6 +100,56 @@ export class User extends Document<IUser> implements IUser {
 class UserCollectionFactory extends CollectionFactory<User> {
   constructor(docType: typeof User) {
     super(User.collectionName, docType, ['firstName', 'lastName', 'email'])
+  }
+
+  async createIndexes() {
+    await this.collection().createIndexes([
+      {
+        key: {
+          email: 1,
+        },
+        unique: true,
+      },
+      {
+        key: {
+          firstName: 'text',
+          lastName: 'text',
+          email: 'text',
+        },
+        weights: {
+          lastName: 4,
+          firstName: 2,
+          email: 1,
+        },
+        name: 'TextIndex',
+      },
+    ])
+  }
+
+  // This is a contrived example for demonstration purposes
+  // It is possible to execute far more sophisticated and high performance queries using Aggregation in MongoDB
+  // Documentation: https://docs.mongodb.com/manual/aggregation/
+  userSearchQuery(
+    searchText: string
+  ): AggregationCursor<{ _id: ObjectID; email: string }> {
+    let aggregateQuery = [
+      {
+        $match: {
+          $text: { $search: searchText },
+        },
+      },
+      {
+        $project: {
+          email: 1,
+        },
+      },
+    ]
+
+    if (searchText === undefined || searchText === '') {
+      delete (aggregateQuery[0] as any).$match.$text
+    }
+
+    return this.collection().aggregate(aggregateQuery)
   }
 }
 

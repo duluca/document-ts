@@ -1,5 +1,8 @@
 import { Collection, ObjectID } from 'mongodb';
-export interface IDocument {
+export interface IDbRecord {
+    _id: ObjectID;
+}
+export interface IDocument extends IDbRecord {
     _id: ObjectID;
     collectionName: string;
 }
@@ -14,8 +17,9 @@ export interface IQueryParameters {
     skip?: number;
     limit?: number;
     sortKeyOrList?: string | Object[] | Object;
+    order?: string;
 }
-export interface IPaginationResult<TDocument extends IDocument> {
+export interface IPaginationResult<TDocument extends IDocument | Object> {
     data: (TDocument | undefined)[];
     total: number;
 }
