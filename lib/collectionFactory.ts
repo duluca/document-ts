@@ -11,13 +11,13 @@ import { getDbInstance } from './database'
 import {
   Func,
   ICollectionProvider,
+  IDbRecord,
   IDocument,
   IFilter,
   IPaginationResult,
   IQueryParameters,
 } from './interfaces'
 
-// (type: { new (): T })
 export abstract class CollectionFactory<TDocument extends IDocument> {
   constructor(
     public collectionName: string,
@@ -60,55 +60,92 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return this.hydrateObject(document.value) || this.undefinedObject
   }
 
-  async findWithPagination(
-    queryParams: Object,
-    aggregationCursor?: Func<AggregationCursor<TDocument>>,
+  async findWithPagination<TReturnType extends IDbRecord>(
+    queryParams: Partial<IQueryParameters> & Object,
+    aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
     query?: string | Object,
     searchableProperties?: string[],
     hydrate = false
-  ): Promise<IPaginationResult<any>> {
+  ): Promise<IPaginationResult<TReturnType>> {
     let collection = this
 
-    let options = this.buildQueryParameters(queryParams)
+    let cursor = this.buildCursor<TReturnType>(
+      aggregationCursorFunc ? aggregationCursorFunc() : undefined,
+      queryParams,
+      query,
+      searchableProperties
+    )
 
-    let pagingCursor: AggregationCursor<TDocument>
-    let totalCursor: AggregationCursor<TDocument> | undefined
-    let cursor: Cursor<TDocument> | AggregationCursor<TDocument>
+    let executionCursor = await this.buildQuery(cursor, queryParams)
+    let loadStrategy: Promise<any>
 
+    if (executionCursor instanceof Cursor) {
+      loadStrategy = collection.cursorStrategy(executionCursor, hydrate, collection)
+    } else {
+      loadStrategy = collection.aggregationCursorStrategy<TReturnType>(executionCursor)
+    }
+
+    let returnData = await Promise.all([
+      loadStrategy,
+      this.getTotal(aggregationCursorFunc ? aggregationCursorFunc() : undefined, query),
+    ])
+    return {
+      data: returnData[0],
+      total: returnData[1],
+    }
+  }
+
+  private buildCursor<TReturnType>(
+    aggregationCursor: AggregationCursor<TReturnType> | undefined,
+    queryParams: Partial<IQueryParameters> & Object,
+    query: string | Object | undefined,
+    searchableProperties: string[] | undefined
+  ): AggregationCursor<TReturnType> | Cursor<TDocument> {
     if (aggregationCursor) {
-      pagingCursor = aggregationCursor()
-      totalCursor = aggregationCursor()
-
-      if (options && options.filter) {
-        pagingCursor = pagingCursor.match(
-          this.buildTokenizedQueryObject(options.filter, this.searchableProperties)
+      if (queryParams && queryParams.filter) {
+        aggregationCursor = aggregationCursor.match(
+          this.buildTokenizedQueryObject(queryParams.filter, this.searchableProperties)
         )
       }
-
-      cursor = pagingCursor
+      return aggregationCursor
     } else {
       if (!query) {
         query = {}
       }
-      cursor = this.getCursor(query, searchableProperties || this.searchableProperties)
-    }
-
-    let documents = await this.buildQuery(cursor, options).toArray()
-
-    return {
-      data: await Promise.all(
-        documents.map((document: TDocument) => {
-          return hydrate ? collection.hydrateObject(document) : document
-        })
-      ),
-      total: await this.getTotal(totalCursor, query),
+      return this.getCursor(query, searchableProperties || this.searchableProperties)
     }
   }
 
-  async getTotal(
-    aggregationCursor?: AggregationCursor<TDocument>,
-    query = {}
-  ): Promise<number> {
+  private async cursorStrategy(
+    cursor: Cursor<TDocument>,
+    hydrate: boolean,
+    collection: CollectionFactory<TDocument>
+  ): Promise<(TDocument | undefined)[]> {
+    let data: (TDocument | undefined)[] = []
+    await cursor.forEach(document =>
+      data.push(hydrate ? collection.hydrateObject(document) : document)
+    )
+    return data
+  }
+
+  private async aggregationCursorStrategy<TReturnType>(
+    cursor: AggregationCursor<TReturnType>
+  ): Promise<(TReturnType | undefined)[]> {
+    return new Promise<(TReturnType | undefined)[]>((resolve, reject) => {
+      const data: (TReturnType | undefined)[] = []
+      cursor.each((err, document) => {
+        if (err) {
+          reject(err.message)
+        } else if (document == null) {
+          resolve(data)
+        } else {
+          data.push((document as unknown) as TReturnType)
+        }
+      })
+    })
+  }
+
+  async getTotal(aggregationCursor?: AggregationCursor, query = {}): Promise<number> {
     if (aggregationCursor) {
       let result = await aggregationCursor
         .group({ _id: null, count: { $sum: 1 } })
@@ -145,17 +182,12 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     skip?: number,
     limit?: number
   ): Promise<TDocument[]> {
-    let collection = this
-    let documents = await this.collection()
+    return await this.collection()
       .find(query, fields)
       .skip(skip ? skip : 0)
-      .limit(limit ? limit : 999999999)
+      .limit(limit ? limit : Number.MAX_SAFE_INTEGER)
+      .map(document => this.hydrateObject(document) || this.undefinedObject)
       .toArray()
-    return Promise.all(
-      documents.map(document => {
-        return collection.hydrateObject(document) || collection.undefinedObject
-      })
-    )
   }
 
   hydrateObject(document: any): TDocument | undefined {
@@ -170,7 +202,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   async count(query: Object, options?: MongoCountPreferences): Promise<number> {
-    return await this.collection().count(query, options)
+    return await this.collection().countDocuments(query, options)
   }
 
   private tokenize(searchText: string): RegExp {
@@ -195,31 +227,6 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return { $or: query }
   }
 
-  buildQueryParameters(query?: any): IQueryParameters | undefined {
-    if (!query) {
-      return undefined
-    }
-    let toReturn: IQueryParameters = {}
-
-    if (query.filter && query.filter.length > 0) {
-      toReturn.filter = query.filter
-    }
-
-    if (query.skip) {
-      toReturn.skip = parseInt(query.skip)
-    }
-
-    if (query.limit) {
-      toReturn.limit = parseInt(query.limit)
-    }
-
-    if (query.order) {
-      toReturn.sortKeyOrList = query.order
-    }
-
-    return toReturn
-  }
-
   sortKeyToObject(sortKey: string | Object): Object {
     if (typeof sortKey !== 'string') {
       return sortKey
@@ -241,14 +248,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  buildQuery(
-    cursor: Cursor<TDocument> | AggregationCursor<TDocument>,
+  buildQuery<TReturnType>(
+    cursor: Cursor<TDocument> | AggregationCursor<TReturnType>,
     parameters?: IQueryParameters
-  ): Cursor<TDocument> | AggregationCursor<TDocument> {
+  ): Cursor<TDocument> | AggregationCursor<TReturnType> {
     if (parameters) {
       if (parameters.sortKeyOrList) {
         for (let sortObject of this.sortKeyOrListToObject(parameters.sortKeyOrList)) {
-          cursor = (cursor as AggregationCursor<TDocument>).sort(sortObject)
+          cursor = (cursor as AggregationCursor<TReturnType>).sort(sortObject)
         }
       }
 
