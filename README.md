@@ -12,7 +12,7 @@ A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Docu
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
 ## Quick Start
-> Supports MongoDB 3.3.2 and TypeScript 3.6.3
+> Supports MongoDB v4.2, Mongo Driver 3.3.2 and TypeScript 3.6.3
 
 - Add DocumentTS to your project with `npm install document-ts mongodb`
 - Connect to your Mongo database using `connect()`
