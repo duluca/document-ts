@@ -184,8 +184,8 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ): Promise<TDocument[]> {
     return await this.collection()
       .find(query, fields)
-      .skip(skip ? skip : 0)
-      .limit(limit ? limit : Number.MAX_SAFE_INTEGER)
+      .skip(skip ? parseInt(skip as any) : 0)
+      .limit(limit ? parseInt(limit as any): Number.MAX_SAFE_INTEGER)
       .map(document => this.hydrateObject(document) || this.undefinedObject)
       .toArray()
   }
@@ -260,11 +260,11 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       }
 
       if (parameters.skip) {
-        cursor = cursor.skip(parameters.skip)
+        cursor = cursor.skip(parseInt(parameters.skip as any))
       }
 
       if (parameters.limit) {
-        cursor = cursor.limit(parameters.limit)
+        cursor = cursor.limit(parseInt(parameters.limit as any))
       }
     }
 
