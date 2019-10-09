@@ -1,4 +1,4 @@
-import { AggregationCursor, Cursor, FindOneAndReplaceOption, FindOneOptions, MongoCountPreferences } from 'mongodb';
+import { AggregationCursor, Cursor, FilterQuery, FindOneAndReplaceOption, FindOneOptions, MongoCountPreferences, UpdateQuery } from 'mongodb';
 import { Func, ICollectionProvider, IDbRecord, IDocument, IFilter, IPaginationResult, IQueryParameters } from './interfaces';
 export declare abstract class CollectionFactory<TDocument extends IDocument> {
     collectionName: string;
@@ -9,8 +9,8 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     readonly collection: ICollectionProvider<TDocument>;
     aggregate(pipeline: Object[]): AggregationCursor<TDocument>;
     protected readonly undefinedObject: TDocument;
-    findOne(filter: IFilter, options?: FindOneOptions): Promise<TDocument>;
-    findOneAndUpdate(filter: IFilter, update: Object, options?: FindOneAndReplaceOption): Promise<TDocument>;
+    findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions): Promise<TDocument>;
+    findOneAndUpdate(filter: FilterQuery<TDocument>, update: TDocument | UpdateQuery<TDocument>, options?: FindOneAndReplaceOption): Promise<TDocument>;
     findWithPagination<TReturnType extends IDbRecord>(queryParams: Partial<IQueryParameters> & Object, aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>, query?: string | Object, searchableProperties?: string[], hydrate?: boolean): Promise<IPaginationResult<TReturnType>>;
     private buildCursor;
     private cursorStrategy;
@@ -18,9 +18,9 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     getTotal(aggregationCursor?: AggregationCursor, query?: {}): Promise<number>;
     getCursor(query: string | Object, searchableProperties: string[]): Cursor<TDocument>;
     fieldsArrayToObject(fields: string[]): Object;
-    find(query: Object, fields?: Object, skip?: number, limit?: number): Promise<TDocument[]>;
+    find(query: FilterQuery<TDocument>, options?: FindOneOptions, skip?: number, limit?: number): Promise<TDocument[]>;
     hydrateObject(document: any): TDocument | undefined;
-    count(query: Object, options?: MongoCountPreferences): Promise<number>;
+    count(query: FilterQuery<TDocument>, options?: MongoCountPreferences): Promise<number>;
     private tokenize;
     buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object;
     sortKeyToObject(sortKey: string | Object): Object;

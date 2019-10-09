@@ -12,22 +12,26 @@ export async function connect(
   connectionRetryMax = 10,
   certFileUri?: string
 ) {
-  let mongoOptions: MongoClientOptions = { useNewUrlParser: true }
+  const defaultMongoOptions: MongoClientOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+
+  let mongoOptions: MongoClientOptions = Object.assign(defaultMongoOptions)
 
   if (certFileUri) {
     let certFileBuf = [readFileSync(certFileUri)]
 
-    mongoOptions = {
+    mongoOptions = Object.assign(mongoOptions, {
       ssl: true,
       sslValidate: true,
       sslCA: certFileBuf,
       poolSize: 1,
-      useNewUrlParser: true,
-    }
+    })
   }
 
   if (isProduction === false) {
-    mongoOptions = { useNewUrlParser: true }
+    mongoOptions = Object.assign(defaultMongoOptions)
   }
 
   let retryAttempt = 0

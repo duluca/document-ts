@@ -1,10 +1,12 @@
 import {
   AggregationCursor,
   Cursor,
+  FilterQuery,
   FindOneAndReplaceOption,
   FindOneOptions,
   MongoCountPreferences,
   ObjectID,
+  UpdateQuery,
 } from 'mongodb'
 
 import { getDbInstance } from './database'
@@ -44,15 +46,18 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return <TDocument>new this.documentType()
   }
 
-  async findOne(filter: IFilter, options?: FindOneOptions): Promise<TDocument> {
+  async findOne(
+    filter: FilterQuery<TDocument>,
+    options?: FindOneOptions
+  ): Promise<TDocument> {
     this.sanitizeId(filter)
     let document = await this.collection().findOne(filter, options)
     return this.hydrateObject(document) || this.undefinedObject
   }
 
   async findOneAndUpdate(
-    filter: IFilter,
-    update: Object,
+    filter: FilterQuery<TDocument>,
+    update: TDocument | UpdateQuery<TDocument>,
     options?: FindOneAndReplaceOption
   ): Promise<TDocument> {
     this.sanitizeId(filter)
@@ -177,16 +182,18 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   }
 
   async find(
-    query: Object,
-    fields?: Object,
+    query: FilterQuery<TDocument>,
+    options?: FindOneOptions,
     skip?: number,
     limit?: number
   ): Promise<TDocument[]> {
     return await this.collection()
-      .find(query, fields)
+      .find(query, options)
       .skip(skip ? parseInt(skip as any) : 0)
-      .limit(limit ? parseInt(limit as any): Number.MAX_SAFE_INTEGER)
-      .map(document => this.hydrateObject(document) || this.undefinedObject)
+      .limit(limit ? parseInt(limit as any) : Number.MAX_SAFE_INTEGER)
+      .map((document: any) => {
+        return this.hydrateObject(document) || this.undefinedObject
+      })
       .toArray()
   }
 
@@ -201,7 +208,10 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return undefined
   }
 
-  async count(query: Object, options?: MongoCountPreferences): Promise<number> {
+  async count(
+    query: FilterQuery<TDocument>,
+    options?: MongoCountPreferences
+  ): Promise<number> {
     return await this.collection().countDocuments(query, options)
   }
 

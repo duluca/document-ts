@@ -1,6 +1,6 @@
 'use strict'
 
-import { ObjectID } from 'mongodb'
+import { ObjectID, UpdateQuery } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect } from '../dist/index'
@@ -233,6 +233,54 @@ describe('Document', function() {
 
     let user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    expect(expectedFirstName).toEqual(foundUser.firstName)
+  })
+
+  it('should find a user by id', async () => {
+    const expectedFirstName = 'Doguhan'
+
+    let user = new User()
+    await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    let foundByIdUser = await UserCollection.findOne({
+      _id: foundUser._id,
+    })
+
+    expect(expectedFirstName).toEqual(foundByIdUser.firstName)
+  })
+
+  it('should find a user by hex id', async () => {
+    const expectedFirstName = 'Doguhan'
+
+    let user = new User()
+    await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    let foundByIdUser = await UserCollection.findOne({
+      _id: foundUser._id.toHexString() as any,
+    })
+
+    expect(expectedFirstName).toEqual(foundByIdUser.firstName)
+  })
+
+  it('should find and update a user', async () => {
+    const expectedFirstName = 'Master'
+
+    let user = new User()
+    await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
+
+    await UserCollection.findOneAndUpdate(
+      { lastName: 'Uluca' },
+      {
+        $set: {
+          firstName: 'Master',
+        },
+      }
+    )
+
     let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
