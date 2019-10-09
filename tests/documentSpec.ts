@@ -87,6 +87,33 @@ describe('Document', function() {
     expect(expectedException).toEqual(actualException)
   })
 
+  it('should find with pagination given string skip and limit', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const dynamicInput: any = '10'
+
+    const results = await UserCollection.findWithPagination<User>({
+      skip: dynamicInput,
+      limit: dynamicInput,
+    })
+    expect(expectedRecordCount).toBe(results.total)
+    expect(results.data.length).toBe(10)
+    expect(results.data[0].firstName).toBe('10')
+  })
+
   it('should find with pagination', async () => {
     const expectedException = null
     let actualException = null
