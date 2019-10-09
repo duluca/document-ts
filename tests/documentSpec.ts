@@ -1,6 +1,6 @@
 'use strict'
 
-import { ObjectID, UpdateQuery } from 'mongodb'
+import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect } from '../dist/index'
