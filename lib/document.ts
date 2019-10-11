@@ -59,8 +59,10 @@ export abstract class Document<TDocument extends IDocument>
     } else {
       let result = await getDbInstance()
         .collection(this.collectionName)
-        .updateOne({ _id: this._id }, this, options)
-      return result.modifiedCount == 1
+        .updateOne({ _id: this._id }, { $set: this }, options)
+      return (
+        result.modifiedCount == 1 || result.matchedCount == 1 || result.upsertedCount == 1
+      )
     }
   }
 

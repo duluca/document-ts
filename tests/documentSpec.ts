@@ -309,4 +309,37 @@ describe('Document', function() {
 
     expect(isMatch).toBeTruthy()
   })
+
+  it('should update user', async () => {
+    const expectedFirstName = 'Blehamy'
+
+    let user = new User()
+    await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    let foundByIdUser = await UserCollection.findOne({
+      _id: foundUser._id,
+    })
+
+    foundByIdUser.firstName = 'Blehamy'
+
+    let result = await foundByIdUser.save()
+
+    expect(result).toBeTruthy()
+    expect(expectedFirstName).toEqual(foundByIdUser.firstName)
+  })
+
+  it('should return truthy when saving user with no changes', async () => {
+    let user = new User()
+    await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+    let foundByIdUser = await UserCollection.findOne({
+      _id: foundUser._id,
+    })
+
+    let result = await foundByIdUser.save()
+
+    expect(result).toBeTruthy()
+  })
 })
