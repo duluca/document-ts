@@ -1,6 +1,5 @@
 'use strict'
 
-import { compareSync } from 'bcryptjs'
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
