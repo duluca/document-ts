@@ -5,10 +5,13 @@ export declare abstract class Document<TDocument extends IDocument> implements I
     collectionName: string;
     '_id': ObjectID;
     [index: string]: any;
-    constructor(collectionName: string, document?: TDocument);
+    constructor(collectionName: string, document?: Partial<TDocument>);
     protected abstract getCalculatedPropertiesToInclude(): string[];
     protected abstract getPropertiesToExclude(): string[];
     protected fillData(data: any): void;
+    protected hydrateInterfaceArray<TInterface extends TObject, TObject extends Object>(objectArray: Partial<TInterface>[], hydrator: (object: Partial<TInterface>) => TObject, objectType: {
+        new (): TObject;
+    }): TObject[];
     private hasObjectId;
     save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean>;
     delete(): Promise<DeleteWriteOpResultObject>;

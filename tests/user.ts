@@ -3,12 +3,14 @@ import { AggregationCursor, ObjectID } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 
 import { CollectionFactory, Document, IDocument } from '../dist/index'
+import { Color, IColor } from './color'
 
 export interface IUser extends IDocument {
   email?: string
   firstName?: string
   lastName?: string
   role?: string
+  colors: IColor[]
 }
 
 export class User extends Document<IUser> implements IUser {
@@ -18,13 +20,13 @@ export class User extends Document<IUser> implements IUser {
   public firstName: string
   public lastName: string
   public role: string
+  public colors: Color[] = []
 
-  constructor(user?: IUser) {
+  constructor(user?: Partial<IUser>) {
     super(User.collectionName, user)
-    this.email = (user && user.email) || ''
-    this.firstName = (user && user.firstName) || ''
-    this.lastName = (user && user.lastName) || ''
-    this.role = (user && user.role) || ''
+    if (user) {
+      this.colors = this.hydrateInterfaceArray(user.colors, Color.Build, Color)
+    }
   }
 
   getCalculatedPropertiesToInclude(): string[] {
@@ -44,7 +46,8 @@ export class User extends Document<IUser> implements IUser {
     lastName: string,
     email: string,
     role: string,
-    password?: string
+    password?: string,
+    colors: IColor[] = []
   ) {
     this.firstName = firstName
     this.lastName = lastName
@@ -56,6 +59,11 @@ export class User extends Document<IUser> implements IUser {
     }
 
     this.password = await this.setPassword(password)
+
+    for (let i = 0; i < colors.length; i++) {
+      this.colors.push(Color.Build(colors[i]))
+    }
+
     await this.save()
   }
 
@@ -94,6 +102,15 @@ export class User extends Document<IUser> implements IUser {
 
   hasSameId(id: ObjectID): boolean {
     return this._id.toHexString() === id.toHexString()
+  }
+
+  toJSON() {
+    // drop a breakpoint here or console.log(this)
+    return super.toJSON()
+  }
+
+  toBSON() {
+    return super.toBSON()
   }
 }
 

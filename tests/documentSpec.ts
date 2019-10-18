@@ -1,10 +1,11 @@
 'use strict'
 
+import { compareSync } from 'bcryptjs'
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect } from '../dist/index'
-import { User, UserCollection } from './user'
+import { IUser, User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
@@ -85,6 +86,97 @@ describe('Document', function() {
     }
 
     expect(expectedException).toEqual(actualException)
+  })
+
+  it('should overwrite record with same id', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      let user = new User()
+      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+      await user.create('Doguhan', 'Uluca1', 'duluca@gmail.com', 'user')
+    } catch (ex) {
+      actualException = ex
+    }
+
+    const results = await UserCollection.find({ firstName: 'Doguhan' })
+
+    expect(expectedException).toEqual(actualException)
+    expect(results[0].lastName).toEqual('Uluca1')
+  })
+
+  it('should fail to store two users with same email (unique index)', async () => {
+    let expectedResult = false
+    let actualResult = true
+
+    await UserCollection.createIndexes()
+
+    spyOn(console, 'error')
+
+    let user = new User({
+      firstName: 'Doguhan',
+      lastName: 'Uluca',
+      email: 'duluca@gmail.com',
+      role: 'user',
+    } as IUser)
+    await user.save()
+    let user1 = new User({
+      firstName: 'Doguhan1',
+      lastName: 'Uluca1',
+      email: 'duluca@gmail.com',
+      role: 'user',
+    } as IUser)
+    actualResult = await user1.save()
+
+    expect(actualResult).toEqual(expectedResult)
+    expect(console.error).toHaveBeenCalledTimes(2)
+  })
+
+  it('should create a user with array values', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      let user = new User()
+      await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', '123456', [
+        { hue: 'red', alpha: 0.5 },
+      ])
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.find({ firstName: 'Doguhan' })
+
+    expect(results.length).toEqual(1)
+    expect(results[0].colors[0].hue).toEqual('red')
+  })
+
+  it('should save a user with array values', async () => {
+    const expectedException = null
+    let actualException = null
+
+    try {
+      let user = new User({
+        firstName: 'Doguhan',
+        lastName: 'Uluca',
+        email: 'duluca@gmail.com',
+        role: 'user',
+        colors: [{ hue: 'red', alpha: 0.5 }],
+      })
+      await user.save()
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.find({ firstName: 'Doguhan' })
+
+    expect(results.length).toEqual(1)
+    expect(results[0].colors[0].hue).toEqual('red')
   })
 
   it('should find with pagination given string skip and limit', async () => {
