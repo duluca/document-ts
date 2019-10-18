@@ -73,7 +73,11 @@ export abstract class Document<TDocument extends IDocument>
         let result = await getDbInstance()
           .collection(this.collectionName)
           .updateOne({ _id: this._id }, { $set: this }, options)
-        return result.modifiedCount == 1
+        return (
+          result.modifiedCount == 1 ||
+          result.matchedCount == 1 ||
+          result.upsertedCount == 1
+        )
       }
     } catch (ex) {
       console.error(ex)
