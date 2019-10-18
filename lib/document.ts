@@ -8,7 +8,7 @@ import {
 import { getDbInstance } from './database'
 import { DocumentException } from './documentException'
 import { IDocument } from './interfaces'
-import { ISerializable, serializationStrategy, serialize } from './serializer'
+import { ISerializable, SerializationStrategy, Serialize } from './serializer'
 
 const defaultExcludes = ['collectionName', 'includes', 'excludes']
 
@@ -17,7 +17,7 @@ export abstract class Document<TDocument extends IDocument>
   public '_id': ObjectID
   [index: string]: any
 
-  constructor(public collectionName: string, document?: TDocument) {
+  constructor(public collectionName: string, document?: Partial<TDocument>) {
     if (document) {
       this.fillData(document)
     }
@@ -33,6 +33,18 @@ export abstract class Document<TDocument extends IDocument>
     })
   }
 
+  protected hydrateInterfaceArray<TInterface extends TObject, TObject extends Object>(
+    objectArray: Partial<TInterface>[],
+    hydrator: (object: Partial<TInterface>) => TObject,
+    objectType: { new (): TObject }
+  ): TObject[] {
+    if (!objectArray || objectArray.length === 0) {
+      return []
+    }
+
+    return objectArray.map(e => (e instanceof objectType ? e : hydrator(e)))
+  }
+
   private hasObjectId(): Boolean {
     if (this._id && this._id.generationTime) {
       return ObjectID.isValid(this._id.generationTime)
@@ -42,25 +54,34 @@ export abstract class Document<TDocument extends IDocument>
   }
 
   async save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean> {
-    if (!this.hasObjectId()) {
-      try {
+    try {
+      if (!this.hasObjectId()) {
+        try {
+          let result = await getDbInstance()
+            .collection(this.collectionName)
+            .insertOne(this, options)
+
+          if (result.insertedCount > 0) {
+            this.fillData(result.ops[0])
+          }
+          return result.insertedCount == 1
+        } catch (ex) {
+          console.error(ex)
+          throw new DocumentException(ex)
+        }
+      } else {
         let result = await getDbInstance()
           .collection(this.collectionName)
-          .insertOne(this, options)
-
-        if (result.insertedCount > 0) {
-          this.fillData(result.ops[0])
-        }
-        return result.insertedCount == 1
-      } catch (ex) {
-        console.error(ex)
-        throw new DocumentException(ex)
+          .updateOne({ _id: this._id }, { $set: this }, options)
+        return (
+          result.modifiedCount == 1 ||
+          result.matchedCount == 1 ||
+          result.upsertedCount == 1
+        )
       }
-    } else {
-      let result = await getDbInstance()
-        .collection(this.collectionName)
-        .updateOne({ _id: this._id }, this, options)
-      return result.modifiedCount == 1
+    } catch (ex) {
+      console.error(ex)
+      return false
     }
   }
 
@@ -89,11 +110,11 @@ export abstract class Document<TDocument extends IDocument>
       this.getPropertiesToExclude(),
       this.getCalculatedPropertiesToInclude()
     )
-    return serialize(serializationStrategy.toJSON, this, fields)
+    return Serialize(SerializationStrategy.JSON, this, fields)
   }
 
   toBSON(): Object {
     let fields = this.fieldsToSerialize(this.getCalculatedPropertiesToInclude())
-    return serialize(serializationStrategy.toBSON, this, fields)
+    return Serialize(SerializationStrategy.BSON, this, fields)
   }
 }

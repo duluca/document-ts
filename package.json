@@ -1,6 +1,6 @@
 {
   "name": "document-ts",
-  "version": "4.0.0",
+  "version": "4.2.0",
   "description": "A very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,13 +33,13 @@
   "homepage": "https://github.com/duluca/DocumentTS#readme",
   "dependencies": {},
   "peerDependencies": {
-    "mongodb": "^3.3.2"
+    "mongodb": "^3.3.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
-    "@types/jasmine": "^3.4.2",
+    "@types/jasmine": "^3.4.4",
     "@types/mongodb": "^3.3.6",
-    "@types/node": "^12.7.12",
+    "@types/node": "^12.11.1",
     "@types/uuid": "^3.4.5",
     "bcryptjs": "^2.4.3",
     "cross-conf-env": "^1.1.2",
@@ -49,11 +49,11 @@
     "import-sort-parser-typescript": "^6.0.0",
     "import-sort-style-module": "^6.0.0",
     "jasmine": "^3.5.0",
-    "mongodb": "^3.3.2",
-    "mongodb-memory-server": "^5.2.7",
+    "mongodb": "^3.3.3",
+    "mongodb-memory-server": "^5.2.8",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
-    "typescript": "^3.6.3",
+    "typescript": "^3.6.4",
     "uuid": "^3.3.3"
   },
   "importSort": {

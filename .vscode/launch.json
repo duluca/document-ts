@@ -11,6 +11,7 @@
       "name": "Launch Program",
       "program": "${workspaceRoot}/tests/standalone.js",
       "cwd": "${workspaceRoot}",
+      "preLaunchTask": "npm: pretest",
       "outFiles": []
     },
     {
@@ -30,7 +31,8 @@
       ],
       "env": {
         "NODE_PATH": "."
-      }
+      },
+      "preLaunchTask": "npm: pretest"
     },
     {
       "type": "node",
@@ -42,7 +44,8 @@
       ],
       "env": {
         "NODE_PATH": "."
-      }
+      },
+      "preLaunchTask": "npm: pretest"
     }
   ]
 }

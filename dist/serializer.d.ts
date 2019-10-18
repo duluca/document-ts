@@ -3,8 +3,8 @@ export interface ISerializable {
     toBSON(): Object;
     [index: string]: any;
 }
-export declare enum serializationStrategy {
-    toJSON = 0,
-    toBSON = 1
+export declare enum SerializationStrategy {
+    JSON = "toJSON",
+    BSON = "toBSON"
 }
-export declare function serialize(strategy: serializationStrategy, document: ISerializable, keys?: string[]): Object;
+export declare function Serialize(strategy: SerializationStrategy, document: ISerializable, keys?: string[]): Object;

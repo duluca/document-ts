@@ -4,13 +4,13 @@ export interface ISerializable {
   [index: string]: any
 }
 
-export enum serializationStrategy {
-  toJSON,
-  toBSON,
+export enum SerializationStrategy {
+  JSON = 'toJSON',
+  BSON = 'toBSON',
 }
 
-export function serialize(
-  strategy: serializationStrategy,
+export function Serialize(
+  strategy: SerializationStrategy,
   document: ISerializable,
   keys?: string[]
 ): Object {
@@ -31,7 +31,7 @@ export function serialize(
       serializationTarget[key] = []
       for (let cc of child) {
         if (typeof cc === 'object') {
-          serializationTarget[key].push(serialize(strategy, cc))
+          serializationTarget[key].push(Serialize(strategy, cc))
         } else {
           serializationTarget[key].push(cc)
         }
