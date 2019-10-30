@@ -40,5 +40,5 @@ jobs:
       - run: npm run test:check-coverage
 
       - store_artifacts: # upload test coverage as artifact
-        path: ./coverage/lcov.info
-        prefix: tests
+          path: ./coverage/lcov.info
+          prefix: tests
