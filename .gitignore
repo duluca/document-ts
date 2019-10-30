@@ -40,3 +40,4 @@ jspm_packages
 *.js.map
 declarations
 .DS_Store
+!specs.js
