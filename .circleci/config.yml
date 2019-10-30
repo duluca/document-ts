@@ -22,7 +22,11 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
+      - run: npx audit-ci --low --report-type full
+
       - run: npm ci
+
+      - run: npm run standardize:ci
 
       - save_cache:
           paths:
