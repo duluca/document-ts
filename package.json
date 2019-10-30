@@ -12,8 +12,9 @@
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",
     "pretest": "npm run build && npm run build:test",
-    "test": "cross-conf-env jasmine JASMINE_CONFIG_PATH=jasmine.json",
-    "prestandalone": "npm run pretest",
+    "test": "jasmine --config=./jasmine.json",
+    "pretest:coverage": "npm run pretest",
+    "test:coverage": "istanbul cover --include-all-sources --root ./dist specs.js && istanbul check-coverage",
     "standalone": "node tests/standalone"
   },
   "repository": {
@@ -50,9 +51,13 @@
     "import-sort-cli": "^6.0.0",
     "import-sort-parser-typescript": "^6.0.0",
     "import-sort-style-module": "^6.0.0",
+    "istanbul": "^0.4.5",
     "jasmine": "^3.5.0",
+    "jasmine-console-reporter": "^3.1.0",
+    "jasmine-node": "^3.0.0",
     "mongodb": "^3.3.3",
     "mongodb-memory-server": "^6.0.1",
+    "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
     "typescript": "^3.6.4",
@@ -71,5 +76,12 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "parser": "typescript"
+  },
+  "nyc": {
+    "all": true,
+    "check-coverage": true,
+    "include": [
+      "dist/**/*.js"
+    ]
   }
 }
