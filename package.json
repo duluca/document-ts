@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "standardize": "import-sort --write \"**/*.ts\" && prettier --write \"**/*.ts\"",
-    "standardize:ci": "import-sort -l \"**/*.ts\" && prettier --check \"**/*.ts\"",
+    "standardize": "import-sort --write \"lib/**/*.ts\" && prettier --write \"lib/**/*.ts\"",
+    "standardize:ci": "import-sort -l \"lib/**/*.ts\" && prettier --check \"lib/**/*.ts\"",
     "build": "tsc -p tsconfig.lib.json",
     "build:test": "tsc -p tests/tsconfig.spec.json",
     "prepublishOnly": "npm run test",
