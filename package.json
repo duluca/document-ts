@@ -31,15 +31,17 @@
     "url": "https://github.com/duluca/DocumentTS/issues"
   },
   "homepage": "https://github.com/duluca/DocumentTS#readme",
-  "dependencies": {},
+  "dependencies": {
+    "npm-check-updates": "^3.1.26"
+  },
   "peerDependencies": {
     "mongodb": "^3.3.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/jasmine": "^3.4.4",
-    "@types/mongodb": "^3.3.6",
-    "@types/node": "^12.11.1",
+    "@types/mongodb": "^3.3.7",
+    "@types/node": "^12.12.0",
     "@types/uuid": "^3.4.5",
     "bcryptjs": "^2.4.3",
     "cross-conf-env": "^1.1.2",
@@ -50,7 +52,7 @@
     "import-sort-style-module": "^6.0.0",
     "jasmine": "^3.5.0",
     "mongodb": "^3.3.3",
-    "mongodb-memory-server": "^5.2.8",
+    "mongodb-memory-server": "^6.0.1",
     "prettier": "^1.18.2",
     "rimraf": "^3.0.0",
     "typescript": "^3.6.4",

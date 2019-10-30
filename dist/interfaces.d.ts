@@ -17,7 +17,6 @@ export interface IQueryParameters {
     skip?: number;
     limit?: number;
     sortKeyOrList?: string | Object[] | Object;
-    order?: string;
 }
 export interface IPaginationResult<TDocument extends IDocument | Object> {
     data: (TDocument | undefined)[];
