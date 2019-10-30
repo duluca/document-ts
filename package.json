@@ -15,6 +15,8 @@
     "test": "jasmine --config=./jasmine.json",
     "pretest:coverage": "npm run pretest",
     "test:coverage": "istanbul cover --include-all-sources --root ./dist specs.js && istanbul check-coverage",
+    "test:istanbul": "istanbul cover --include-all-sources --root ./dist specs.js",
+    "test:check-coverage": "istanbul check-coverage",
     "standalone": "node tests/standalone"
   },
   "repository": {
