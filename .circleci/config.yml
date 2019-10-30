@@ -34,10 +34,10 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # run tests!
-      - run: npm test
+      - run: npm run pretest
       - run: npm run test:istanbul
 
       - run: npm run test:check-coverage
 
       - store_artifacts:
-          path: coverage
+          path: coverage/lcov-report
