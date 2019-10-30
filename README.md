@@ -121,6 +121,17 @@ export let UserCollection = new UserCollectionFactory(User)
 
 - `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
 
+- `findWithPagination` leverage query parameters for pagination and configuration
+```js
+export interface IQueryParameters {
+  filter?: string
+  skip?: number
+  limit?: number
+  sortKeyOrList?: string | Object[] | Object
+  projectionKeyOrList?: string | Object[] | Object
+}
+```
+
 - Optionally implement `toJSON()` to customize serialization/hydration behavior or extend `ISerializable`
 
 ```js

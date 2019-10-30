@@ -22,6 +22,7 @@ export interface IQueryParameters {
   skip?: number
   limit?: number
   sortKeyOrList?: string | Object[] | Object
+  projectionKeyOrList?: string | Object[] | Object
 }
 
 export interface IPaginationResult<TDocument extends IDocument | Object> {
