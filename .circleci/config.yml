@@ -45,4 +45,4 @@ jobs:
           path: ./coverage/lcov.info
           prefix: tests
       - codecov/upload:
-          file: {{ coverage_report_filepath }}
+          file: ./coverage/lcov.info
