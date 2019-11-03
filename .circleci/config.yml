@@ -47,4 +47,4 @@ jobs:
       - codecov/upload:
           file: ./coverage/lcov.info
       - store_test_results:
-          path: ./coverage
+          path: ./test_results
