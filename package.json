@@ -78,12 +78,5 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "parser": "typescript"
-  },
-  "nyc": {
-    "all": true,
-    "check-coverage": true,
-    "include": [
-      "dist/**/*.js"
-    ]
   }
 }
