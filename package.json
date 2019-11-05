@@ -97,9 +97,9 @@
       "text",
       "cobertura"
     ],
-    "branches": 75,
-    "lines": 75,
-    "functions": 75,
-    "statements": 75
+    "branches": 80,
+    "lines": 89,
+    "functions": 92,
+    "statements": 90
   }
 }
