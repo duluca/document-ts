@@ -227,6 +227,54 @@ describe('Document', function() {
     expect(results.data[0].firstName).toBe('10')
   })
 
+  it('should find with pagination and sort', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.findWithPagination<User>({
+      sortKeyOrList: ['firstName'],
+    })
+    expect(expectedRecordCount).toBe(results.total)
+    expect(results.data.length).toBe(20)
+    expect(results.data[0].firstName).toBe('0')
+  })
+
+  it('should find with pagination and sort desc', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    expect(expectedException).toEqual(actualException)
+
+    const results = await UserCollection.findWithPagination<User>({
+      sortKeyOrList: ['-firstName'],
+    })
+    expect(expectedRecordCount).toBe(results.total)
+    expect(results.data.length).toBe(20)
+    expect(results.data[0].firstName).toBe('9')
+  })
+
   it('should find with pagination and aggregate query asc', async () => {
     const expectedException = null
     let actualException = null
@@ -247,10 +295,10 @@ describe('Document', function() {
     const results = await UserCollection.findWithPagination<{
       _id: ObjectID
       email: string
-    }>({ skip: 10, limit: 10, sortKeyOrList: ['firstName'] }, aggregateQueryGetter)
+    }>({ skip: 10, limit: 10 }, aggregateQueryGetter)
     expect(expectedRecordCount).toBe(results.total)
     expect(results.data.length).toBe(10)
-    expect(results.data[0].email).toBe('14@gmail.com')
+    expect(results.data[0].email).toBe('10@gmail.com')
     expect((results.data[0] as any).firstName).toBeUndefined()
   })
 
@@ -274,10 +322,10 @@ describe('Document', function() {
     const results = await UserCollection.findWithPagination<{
       _id: ObjectID
       email: string
-    }>({ skip: 10, limit: 10, sortKeyOrList: ['-firstName'] }, aggregateQueryGetter)
+    }>({ skip: 10, limit: 10 }, aggregateQueryGetter)
     expect(expectedRecordCount).toBe(results.total)
     expect(results.data.length).toBe(10)
-    expect(results.data[0].email).toBe('14@gmail.com')
+    expect(results.data[0].email).toBe('10@gmail.com')
     expect((results.data[0] as any).firstName).toBeUndefined()
   })
 
