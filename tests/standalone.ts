@@ -1,4 +1,4 @@
-import { connect } from '../dist/index'
+import { connect } from '../lib/index'
 import { User, UserCollection } from './user'
 
 async function doWork() {

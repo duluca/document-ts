@@ -3,14 +3,15 @@ import { readFileSync } from 'fs'
 import { Db, MongoClient, MongoClientOptions } from 'mongodb'
 
 let dbInstance: Db | null
-let mongoClient: MongoClient
+let mongoClient: MongoClient | null
 
 export async function connect(
   mongoUri: string,
   isProduction = false,
   connectionRetryWait = 5,
   connectionRetryMax = 10,
-  certFileUri?: string
+  certFileUri?: string,
+  overrideOptions?: MongoClientOptions
 ) {
   const defaultMongoOptions: MongoClientOptions = {
     useNewUrlParser: true,
@@ -39,6 +40,10 @@ export async function connect(
 
   if (!connectionRetryMax) {
     connectionRetryMax = 1
+  }
+
+  if (overrideOptions) {
+    Object.assign(mongoOptions, overrideOptions)
   }
 
   while (retryAttempt < connectionRetryMax && !dbInstance) {
@@ -74,6 +79,7 @@ export async function close(force = false) {
   if (mongoClient) {
     await mongoClient.close(force)
     dbInstance = null
+    mongoClient = null
   }
 }
 

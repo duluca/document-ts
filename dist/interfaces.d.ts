@@ -17,10 +17,10 @@ export interface IQueryParameters {
     skip?: number;
     limit?: number;
     sortKeyOrList?: string | Object[] | Object;
-    order?: string;
+    projectionKeyOrList?: string | Object[] | Object;
 }
 export interface IPaginationResult<TDocument extends IDocument | Object> {
-    data: (TDocument | undefined)[];
+    data: TDocument[];
     total: number;
 }
 export interface IFilter {

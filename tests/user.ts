@@ -2,7 +2,7 @@ import * as bcrypt from 'bcryptjs'
 import { AggregationCursor, ObjectID } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 
-import { CollectionFactory, Document, IDocument } from '../dist/index'
+import { CollectionFactory, Document, IDocument } from '../lib/index'
 import { Color, IColor } from './color'
 
 export interface IUser extends IDocument {
