@@ -3,7 +3,7 @@
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { close, connect } from '../dist/index'
+import { close, connect } from '../lib/index'
 import { IUser, User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
@@ -227,7 +227,7 @@ describe('Document', function() {
     expect(results.data[0].firstName).toBe('10')
   })
 
-  it('should find with pagination and aggregate query', async () => {
+  it('should find with pagination and aggregate query asc', async () => {
     const expectedException = null
     let actualException = null
     const expectedRecordCount = 20
@@ -247,10 +247,37 @@ describe('Document', function() {
     const results = await UserCollection.findWithPagination<{
       _id: ObjectID
       email: string
-    }>({ skip: 10, limit: 10 }, aggregateQueryGetter)
+    }>({ skip: 10, limit: 10, sortKeyOrList: ['firstName'] }, aggregateQueryGetter)
     expect(expectedRecordCount).toBe(results.total)
     expect(results.data.length).toBe(10)
-    expect(results.data[0].email).toBe('10@gmail.com')
+    expect(results.data[0].email).toBe('14@gmail.com')
+    expect((results.data[0] as any).firstName).toBeUndefined()
+  })
+
+  it('should find with pagination and aggregate query desc', async () => {
+    const expectedException = null
+    let actualException = null
+    const expectedRecordCount = 20
+
+    try {
+      for (let i = 0; i < expectedRecordCount; i++) {
+        let user = new User()
+        await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
+      }
+    } catch (ex) {
+      actualException = ex
+    }
+
+    const aggregateQueryGetter = () => UserCollection.userSearchQuery('')
+
+    expect(expectedException).toEqual(actualException)
+    const results = await UserCollection.findWithPagination<{
+      _id: ObjectID
+      email: string
+    }>({ skip: 10, limit: 10, sortKeyOrList: ['-firstName'] }, aggregateQueryGetter)
+    expect(expectedRecordCount).toBe(results.total)
+    expect(results.data.length).toBe(10)
+    expect(results.data[0].email).toBe('14@gmail.com')
     expect((results.data[0] as any).firstName).toBeUndefined()
   })
 
@@ -373,6 +400,16 @@ describe('Document', function() {
     let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
+  })
+
+  it('should find no records', async () => {
+    const expectedFirstName = 'Doguhan'
+
+    let user = new User()
+    await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
+    let foundUser = await UserCollection.findOne({ lastName: 'asdfasd' })
+
+    expect(foundUser).toBeNull()
   })
 
   it('should find a user by id', async () => {

@@ -8,9 +8,8 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     sanitizeId(filter: IFilter): void;
     readonly collection: ICollectionProvider<TDocument>;
     aggregate(pipeline: Object[]): AggregationCursor<TDocument>;
-    protected readonly undefinedObject: TDocument;
-    findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions): Promise<TDocument>;
-    findOneAndUpdate(filter: FilterQuery<TDocument>, update: TDocument | UpdateQuery<TDocument>, options?: FindOneAndReplaceOption): Promise<TDocument>;
+    findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions): Promise<TDocument | null>;
+    findOneAndUpdate(filter: FilterQuery<TDocument>, update: TDocument | UpdateQuery<TDocument>, options?: FindOneAndReplaceOption): Promise<TDocument | null>;
     findWithPagination<TReturnType extends IDbRecord>(queryParams: Partial<IQueryParameters> & Object, aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>, query?: string | Object, searchableProperties?: string[], hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
     private buildCursor;
     private cursorStrategy;
@@ -20,7 +19,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     getCursor(builtQuery: {}, projection: {}): Cursor<TDocument>;
     fieldsArrayToObject(fields: string[]): Object;
     find<TReturnType extends IDbRecord>(query: FilterQuery<TDocument>, options?: FindOneOptions, skip?: number, limit?: number, hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
-    hydrateObject(document: any): TDocument | undefined;
+    hydrateObject(document: unknown): TDocument | null;
     count(query: FilterQuery<TDocument>, options?: MongoCountPreferences): Promise<number>;
     private tokenize;
     buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object;

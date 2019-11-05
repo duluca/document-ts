@@ -20,7 +20,7 @@ export interface IQueryParameters {
     projectionKeyOrList?: string | Object[] | Object;
 }
 export interface IPaginationResult<TDocument extends IDocument | Object> {
-    data: (TDocument | undefined)[];
+    data: TDocument[];
     total: number;
 }
 export interface IFilter {

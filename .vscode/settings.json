@@ -3,14 +3,14 @@
     "editor.tabSize": 2,
     "editor.rulers": [90],
     "files.trimTrailingWhitespace": true,
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/*.js": {
-            "when": "$(basename).ts"
-        },
-        "**/*.js.map": {
-            "when": "$(basename)"
-        }
-    }
+    // "files.exclude": {
+    //     "**/.git": true,
+    //     "**/.DS_Store": true,
+    //     "**/*.js": {
+    //         "when": "$(basename).ts"
+    //     },
+    //     "**/*.js.map": {
+    //         "when": "$(basename)"
+    //     }
+    // }
 }

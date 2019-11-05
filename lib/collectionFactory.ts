@@ -43,27 +43,23 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return this.collection().aggregate(pipeline)
   }
 
-  protected get undefinedObject(): TDocument {
-    return <TDocument>new this.documentType()
-  }
-
   async findOne(
     filter: FilterQuery<TDocument>,
     options?: FindOneOptions
-  ): Promise<TDocument> {
+  ): Promise<TDocument | null> {
     this.sanitizeId(filter)
     let document = await this.collection().findOne(filter, options)
-    return this.hydrateObject(document) || this.undefinedObject
+    return this.hydrateObject(document)
   }
 
   async findOneAndUpdate(
     filter: FilterQuery<TDocument>,
     update: TDocument | UpdateQuery<TDocument>,
     options?: FindOneAndReplaceOption
-  ): Promise<TDocument> {
+  ): Promise<TDocument | null> {
     this.sanitizeId(filter)
     let document = await this.collection().findOneAndUpdate(filter, update, options)
-    return this.hydrateObject(document.value) || this.undefinedObject
+    return this.hydrateObject(document.value)
   }
 
   async findWithPagination<TReturnType extends IDbRecord>(
@@ -102,10 +98,10 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       console.log((executionCursor as any).cmd)
     }
 
-    if (executionCursor instanceof Cursor) {
-      loadStrategy = collection.cursorStrategy(executionCursor, hydrate, collection)
-    } else {
+    if (executionCursor instanceof AggregationCursor) {
       loadStrategy = collection.aggregationCursorStrategy<TReturnType>(executionCursor)
+    } else {
+      loadStrategy = collection.cursorStrategy(executionCursor, hydrate, collection)
     }
 
     let returnData = await Promise.all([
@@ -152,8 +148,8 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     cursor: Cursor<TDocument>,
     hydrate: boolean,
     collection: CollectionFactory<TDocument>
-  ): Promise<(TDocument | undefined)[]> {
-    let data: (TDocument | undefined)[] = []
+  ): Promise<(TDocument | null)[]> {
+    let data: (TDocument | null)[] = []
     await cursor.forEach(document =>
       data.push(hydrate ? collection.hydrateObject(document) : document)
     )
@@ -239,15 +235,15 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     )
   }
 
-  hydrateObject(document: any): TDocument | undefined {
+  hydrateObject(document: unknown): TDocument | null {
     if (document && document instanceof this.documentType) {
-      return document
+      return document as TDocument
     } else if (document) {
       const newDocument = <TDocument>new this.documentType()
       Object.assign(newDocument, document)
       return newDocument
     }
-    return undefined
+    return null
   }
 
   async count(

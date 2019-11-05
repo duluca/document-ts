@@ -24,15 +24,15 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jasmine documentSpec Test",
+      "name": "Jasmine Current Spec File",
       "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
       "args": [
-        "tests/documentSpec.js"
+        "tests/${fileBasenameNoExtension}.js"
       ],
       "env": {
         "NODE_PATH": "."
       },
-      "preLaunchTask": "npm: pretest"
+      "preLaunchTask": "npm: build:test"
     },
     {
       "type": "node",

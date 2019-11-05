@@ -1,23 +1,13 @@
 version: 2.1
-orbs:
-  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/node:lts
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
 
     working_directory: ~/repo
 
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
@@ -37,14 +27,11 @@ jobs:
 
       # run tests!
       - run: npm run pretest
-      - run: npm run test:istanbul
-
-      - run: npm run test:check-coverage
+      - run: npm run test:nyc
 
       - store_artifacts: # upload test coverage as artifact
-          path: ./coverage/lcov.info
-          prefix: tests
+          path: ./coverage
       - codecov/upload:
           file: ./coverage/lcov.info
       - store_test_results:
-          path: ./test_results
+          path: ./coverage

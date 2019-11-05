@@ -26,7 +26,7 @@ export interface IQueryParameters {
 }
 
 export interface IPaginationResult<TDocument extends IDocument | Object> {
-  data: (TDocument | undefined)[]
+  data: TDocument[]
   total: number
 }
 export interface IFilter {
