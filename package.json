@@ -96,7 +96,8 @@
       "**/coverage"
     ],
     "reporter": [
-      "lcov"
+      "lcov",
+      "text"
     ],
     "branches": 80,
     "lines": 89,
