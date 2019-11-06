@@ -27,22 +27,25 @@ export abstract class Document<TDocument extends IDocument>
 
   protected abstract getPropertiesToExclude(): string[]
 
-  protected fillData(data: any) {
-    Object.keys(data).forEach(key => {
-      this[key] = data[key]
-    })
+  protected abstract fillData(data?: Partial<TDocument>): void
+
+  protected hydrateInterface<TInterface extends TObject, TObject extends object>(
+    objectType: new () => TObject,
+    hydrator: (data: Partial<TInterface>) => TObject,
+    element: Partial<TInterface>
+  ) {
+    return element instanceof objectType ? element : hydrator(element)
   }
 
   protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(
-    objectArray: Partial<TInterface>[],
-    hydrator: (object: Partial<TInterface>) => TObject,
-    objectType: new () => TObject
-  ): TObject[] {
+    objectType: new () => TObject,
+    hydrator: (data: Partial<TInterface>) => TObject,
+    objectArray: Partial<TInterface>[]
+  ): TObject[] | undefined {
     if (!objectArray || objectArray.length === 0) {
-      return []
+      return undefined
     }
-
-    return objectArray.map(e => (e instanceof objectType ? e : hydrator(e)))
+    return objectArray.map(e => this.hydrateInterface(objectType, hydrator, e))
   }
 
   private hasObjectId(): boolean {

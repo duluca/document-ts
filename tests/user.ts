@@ -14,18 +14,28 @@ export interface IUser extends IDocument {
 }
 
 export class User extends Document<IUser> implements IUser {
+  constructor(user?: Partial<IUser>) {
+    super(User.collectionName, user)
+  }
+
+  public get fullName(): string {
+    return `${this.firstName} ${this.lastName}`
+  }
   static collectionName = 'users'
-  private password = ''
+  private password: string
   public email: string
   public firstName: string
   public lastName: string
   public role: string
-  public colors: Color[] = []
+  public colors: Color[]
 
-  constructor(user?: Partial<IUser>) {
-    super(User.collectionName, user)
-    if (user) {
-      this.colors = this.hydrateInterfaceArray(user.colors, Color.Build, Color)
+  fillData(data?: Partial<IUser>) {
+    if (data) {
+      Object.assign(this, data)
+
+      if (this.colors) {
+        this.colors = this.hydrateInterfaceArray(Color, Color.Build, this.colors)
+      }
     }
   }
 
@@ -37,17 +47,13 @@ export class User extends Document<IUser> implements IUser {
     return ['password']
   }
 
-  public get fullName(): string {
-    return `${this.firstName} ${this.lastName}`
-  }
-
   async create(
     firstName: string,
     lastName: string,
     email: string,
     role: string,
     password?: string,
-    colors: IColor[] = []
+    colors?: IColor[]
   ) {
     this.firstName = firstName
     this.lastName = lastName
@@ -60,8 +66,8 @@ export class User extends Document<IUser> implements IUser {
 
     this.password = await this.setPassword(password)
 
-    for (const element of colors) {
-      this.colors.push(Color.Build(element))
+    if (colors) {
+      this.colors = this.hydrateInterfaceArray(Color, Color.Build, colors)
     }
 
     await this.save()

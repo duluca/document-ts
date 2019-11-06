@@ -3,7 +3,8 @@
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { close, connect } from '../lib/index'
+import { IDocument } from '../dist'
+import { ISerializable, close, connect } from '../lib/index'
 import { IUser, User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
@@ -366,12 +367,19 @@ describe('Document', () => {
     const results = await UserCollection.findWithPagination<{
       _id: ObjectID
       email: string
-    }>({ filter: searchText, projectionKeyOrList: ['email', 'firstName'] })
+      fullName: string
+    }>({
+      filter: searchText,
+      projectionKeyOrList: ['email', 'fullName', '_id', 'firstName', 'lastName'],
+    })
 
     expect(expectedSearchResults).toBe(results.total)
     expect(results.data.length).toBe(expectedSearchResults)
     expect((results.data[0] as any).password).toBeUndefined()
+    expect((results.data[0] as any).colors).toBeUndefined()
     expect((results.data[0] as any).firstName).toBe('Smith')
+    expect(results.data[0]._id).toBeDefined()
+    expect(results.data[0].fullName).toBe('Smith Jones')
     expect(results.data[0].email).toBe('jones.smith@icloud.com')
   })
 

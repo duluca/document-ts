@@ -1,4 +1,4 @@
-export interface ISerializable {
+export interface ISerializable extends Object {
     toJSON(): object;
     toBSON(): object;
     [index: string]: any;
