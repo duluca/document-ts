@@ -6,7 +6,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     searchableProperties: string[];
     constructor(collectionName: string, documentType: any, searchableProperties?: string[]);
     sanitizeId(filter: IFilter): void;
-    readonly collection: ICollectionProvider<TDocument>;
+    get collection(): ICollectionProvider<TDocument>;
     aggregate(pipeline: Object[]): AggregationCursor<TDocument>;
     findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions): Promise<TDocument | null>;
     findOneAndUpdate(filter: FilterQuery<TDocument>, update: TDocument | UpdateQuery<TDocument>, options?: FindOneAndReplaceOption): Promise<TDocument | null>;
