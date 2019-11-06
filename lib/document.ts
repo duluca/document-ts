@@ -33,10 +33,10 @@ export abstract class Document<TDocument extends IDocument>
     })
   }
 
-  protected hydrateInterfaceArray<TInterface extends TObject, TObject extends Object>(
+  protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(
     objectArray: Partial<TInterface>[],
     hydrator: (object: Partial<TInterface>) => TObject,
-    objectType: { new (): TObject }
+    objectType: new () => TObject
   ): TObject[] {
     if (!objectArray || objectArray.length === 0) {
       return []
@@ -45,7 +45,7 @@ export abstract class Document<TDocument extends IDocument>
     return objectArray.map(e => (e instanceof objectType ? e : hydrator(e)))
   }
 
-  private hasObjectId(): Boolean {
+  private hasObjectId(): boolean {
     if (this._id && this._id.generationTime) {
       return ObjectID.isValid(this._id.generationTime)
     }
@@ -57,26 +57,26 @@ export abstract class Document<TDocument extends IDocument>
     try {
       if (!this.hasObjectId()) {
         try {
-          let result = await getDbInstance()
+          const result = await getDbInstance()
             .collection(this.collectionName)
             .insertOne(this, options)
 
           if (result.insertedCount > 0) {
             this.fillData(result.ops[0])
           }
-          return result.insertedCount == 1
+          return result.insertedCount === 1
         } catch (ex) {
           console.error(ex)
           throw new DocumentException(ex)
         }
       } else {
-        let result = await getDbInstance()
+        const result = await getDbInstance()
           .collection(this.collectionName)
           .updateOne({ _id: this._id }, { $set: this }, options)
         return (
-          result.modifiedCount == 1 ||
-          result.matchedCount == 1 ||
-          result.upsertedCount == 1
+          result.modifiedCount === 1 ||
+          result.matchedCount === 1 ||
+          result.upsertedCount === 1
         )
       }
     } catch (ex) {
@@ -86,17 +86,17 @@ export abstract class Document<TDocument extends IDocument>
   }
 
   delete(): Promise<DeleteWriteOpResultObject> {
-    let document = this
-    let collection = getDbInstance().collection(this.collectionName)
+    const document = this
+    const collection = getDbInstance().collection(this.collectionName)
     return collection.deleteOne({ _id: document._id })
   }
 
   private fieldsToSerialize(excludes: string[] = [], includes: string[] = []) {
-    let document = this
+    const document = this
 
     excludes = defaultExcludes.concat(excludes)
 
-    let keys = new Array()
+    const keys = new Array()
     Object.keys(document).forEach(item => {
       if (!(excludes.indexOf(item) > -1)) {
         keys.push(item)
@@ -105,16 +105,16 @@ export abstract class Document<TDocument extends IDocument>
     return keys.concat(includes)
   }
 
-  toJSON(): Object {
-    let fields = this.fieldsToSerialize(
+  toJSON(): object {
+    const fields = this.fieldsToSerialize(
       this.getPropertiesToExclude(),
       this.getCalculatedPropertiesToInclude()
     )
     return Serialize(SerializationStrategy.JSON, this, fields)
   }
 
-  toBSON(): Object {
-    let fields = this.fieldsToSerialize(this.getCalculatedPropertiesToInclude())
+  toBSON(): object {
+    const fields = this.fieldsToSerialize(this.getCalculatedPropertiesToInclude())
     return Serialize(SerializationStrategy.BSON, this, fields)
   }
 }

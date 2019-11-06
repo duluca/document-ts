@@ -29,9 +29,9 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ) {}
 
   sanitizeId(filter: IFilter) {
-    var hasId = filter.hasOwnProperty('_id')
-    if (hasId && typeof filter['_id'] !== 'object') {
-      filter['_id'] = new ObjectID(filter['_id'])
+    const hasId = filter.hasOwnProperty('_id')
+    if (hasId && typeof filter._id !== 'object') {
+      filter._id = new ObjectID(filter._id)
     }
   }
 
@@ -39,7 +39,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return () => getDbInstance().collection<TDocument>(this.collectionName)
   }
 
-  aggregate(pipeline: Object[]): AggregationCursor<TDocument> {
+  aggregate(pipeline: object[]): AggregationCursor<TDocument> {
     return this.collection().aggregate(pipeline)
   }
 
@@ -48,7 +48,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     options?: FindOneOptions
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
-    let document = await this.collection().findOne(filter, options)
+    const document = await this.collection().findOne(filter, options)
     return this.hydrateObject(document)
   }
 
@@ -58,19 +58,19 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     options?: FindOneAndReplaceOption
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
-    let document = await this.collection().findOneAndUpdate(filter, update, options)
+    const document = await this.collection().findOneAndUpdate(filter, update, options)
     return this.hydrateObject(document.value)
   }
 
   async findWithPagination<TReturnType extends IDbRecord>(
-    queryParams: Partial<IQueryParameters> & Object,
+    queryParams: Partial<IQueryParameters> & object,
     aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
-    query?: string | Object,
+    query?: string | object,
     searchableProperties?: string[],
     hydrate = false,
     debugQuery = false
   ): Promise<IPaginationResult<TReturnType>> {
-    let collection = this
+    const collection = this
 
     if (queryParams.filter && !query) {
       query = queryParams.filter
@@ -80,18 +80,18 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       )
     }
 
-    let builtQuery = this.getQuery(
+    const builtQuery = this.getQuery(
       query,
       searchableProperties || this.searchableProperties
     )
 
-    let cursor = this.buildCursor<TReturnType>(
+    const cursor = this.buildCursor<TReturnType>(
       aggregationCursorFunc ? aggregationCursorFunc() : undefined,
       queryParams,
       builtQuery
     )
 
-    let executionCursor = this.buildQuery(cursor, queryParams)
+    const executionCursor = this.buildQuery(cursor, queryParams)
     let loadStrategy: Promise<any>
 
     if (debugQuery && executionCursor) {
@@ -104,7 +104,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       loadStrategy = collection.cursorStrategy(executionCursor, hydrate, collection)
     }
 
-    let returnData = await Promise.all([
+    const returnData = await Promise.all([
       loadStrategy,
       this.getTotal(
         aggregationCursorFunc ? aggregationCursorFunc() : undefined,
@@ -119,7 +119,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
 
   private buildCursor<TReturnType>(
     aggregationCursor: AggregationCursor<TReturnType> | undefined,
-    queryParams: Partial<IQueryParameters> & Object,
+    queryParams: Partial<IQueryParameters> & object,
     builtQuery: {} | undefined
   ): AggregationCursor<TReturnType> | Cursor<TDocument> {
     if (aggregationCursor) {
@@ -134,7 +134,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
         builtQuery = {}
       }
 
-      let projection: Object[] = []
+      let projection: object[] = []
 
       if (queryParams && queryParams.projectionKeyOrList) {
         projection = this.keyOrListToObject(queryParams.projectionKeyOrList, 0)
@@ -149,7 +149,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     hydrate: boolean,
     collection: CollectionFactory<TDocument>
   ): Promise<(TDocument | null)[]> {
-    let data: (TDocument | null)[] = []
+    const data: (TDocument | null)[] = []
     await cursor.forEach(document =>
       data.push(hydrate ? collection.hydrateObject(document) : document)
     )
@@ -178,7 +178,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     builtQuery = {}
   ): Promise<number> {
     if (aggregationCursor) {
-      let result = await aggregationCursor
+      const result = await aggregationCursor
         .group({ _id: null, count: { $sum: 1 } })
         .toArray()
       return result.length > 0 ? (result[0] as any).count : 0
@@ -187,7 +187,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     }
   }
 
-  getQuery(query: string | Object | undefined, searchableProperties: string[]): {} {
+  getQuery(query: string | object | undefined, searchableProperties: string[]): {} {
     if (typeof query === 'string') {
       return this.buildTokenizedQueryObject(query, searchableProperties)
     } else if (typeof query === 'undefined') {
@@ -198,12 +198,12 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
 
   getCursor(builtQuery: {}, projection: {}): Cursor<TDocument> {
     return this.collection().find(builtQuery, {
-      projection: projection,
+      projection,
     })
   }
 
-  fieldsArrayToObject(fields: string[]): Object {
-    let fieldsObject: IFilter = {}
+  fieldsArrayToObject(fields: string[]): object {
+    const fieldsObject: IFilter = {}
 
     fields.forEach(field => {
       fieldsObject[field] = 1
@@ -222,8 +222,8 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ): Promise<IPaginationResult<TReturnType>> {
     return this.findWithPagination(
       {
-        limit: limit,
-        skip: skip,
+        limit,
+        skip,
         sortKeyOrList: options ? options.sort : [],
         projectionKeyOrList: options ? options.projection : [],
       },
@@ -239,7 +239,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     if (document && document instanceof this.documentType) {
       return document as TDocument
     } else if (document) {
-      const newDocument = <TDocument>new this.documentType()
+      const newDocument = new this.documentType() as TDocument
       Object.assign(newDocument, document)
       return newDocument
     }
@@ -260,14 +260,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
       return /.*/
     }
 
-    var regexpString = '^(?=.*' + splitValues.join(')(?=.*') + ').*$'
+    const regexpString = '^(?=.*' + splitValues.join(')(?=.*') + ').*$'
     return new RegExp(regexpString, 'i')
   }
 
-  buildTokenizedQueryObject(filter: string, searchableProperties: string[]): Object {
-    let that = this
-    let query = searchableProperties.map((property: string) => {
-      let obj: any = {}
+  buildTokenizedQueryObject(filter: string, searchableProperties: string[]): object {
+    const that = this
+    const query = searchableProperties.map((property: string) => {
+      const obj: any = {}
       obj[property] = that.tokenize(filter)
       return obj
     })
@@ -275,21 +275,21 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     return { $or: query }
   }
 
-  keyToObject(sortKey: string | Object, negativeValue: number): Object {
+  keyToObject(sortKey: string | object, negativeValue: number): object {
     if (typeof sortKey !== 'string') {
       return sortKey
     } else {
-      let sortObject: { [index: string]: number } = {}
-      let isDesc = sortKey[0] === '-'
+      const sortObject: { [index: string]: number } = {}
+      const isDesc = sortKey[0] === '-'
       sortObject[sortKey.substring(isDesc ? 1 : 0)] = isDesc ? negativeValue : 1
       return sortObject
     }
   }
 
   keyOrListToObject(
-    sortKeyOrList: string | Object[] | Object,
+    sortKeyOrList: string | object[] | object,
     negativeValue: number
-  ): Object[] {
+  ): object[] {
     if (typeof sortKeyOrList === 'string') {
       return [this.keyToObject(sortKeyOrList, negativeValue)]
     } else if (!Array.isArray(sortKeyOrList)) {
@@ -305,17 +305,17 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ): Cursor<TDocument> | AggregationCursor<TReturnType> {
     if (parameters) {
       if (parameters.sortKeyOrList) {
-        for (let sortObject of this.keyOrListToObject(parameters.sortKeyOrList, -1)) {
+        for (const sortObject of this.keyOrListToObject(parameters.sortKeyOrList, -1)) {
           cursor = (cursor as AggregationCursor<TReturnType>).sort(sortObject)
         }
       }
 
       if (parameters.skip) {
-        cursor = cursor.skip(parseInt(parameters.skip as any))
+        cursor = cursor.skip(parseInt(parameters.skip as any, 0))
       }
 
       if (parameters.limit) {
-        cursor = cursor.limit(parseInt(parameters.limit as any))
+        cursor = cursor.limit(parseInt(parameters.limit as any, 0))
       }
     }
 

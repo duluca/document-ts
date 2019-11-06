@@ -1,8 +1,15 @@
 {
   "recommendations": [
+    "johnpapa.vscode-peacock",
     "eamodio.gitlens",
+    "PKief.material-icon-theme",
+    "ms-azuretools.vscode-docker",
     "amatiasq.sort-imports",
     "esbenp.prettier-vscode",
-    "github.vscode-pull-request-github"
+    "DSKWRK.vscode-generate-getter-setter",
+    "esbenp.prettier-vscode",
+    "github.vscode-pull-request-github",
+    "WallabyJs.quokka-vscode",
+    "ms-vscode.vscode-typescript-tslint-plugin"
   ]
 }

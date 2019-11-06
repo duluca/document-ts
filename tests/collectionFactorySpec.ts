@@ -19,7 +19,7 @@ function getExpectedUser() {
   return userInstance
 }
 
-describe('CollectionFactory', function() {
+describe('CollectionFactory', () => {
   beforeEach(async () => {})
 
   afterEach(async () => {})

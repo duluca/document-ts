@@ -15,12 +15,12 @@ export class Color implements IColor, ISerializable {
     return undefined
   }
 
-  toJSON(): Object {
-    let keys = Object.keys(this)
+  toJSON(): object {
+    const keys = Object.keys(this)
     return Serialize(SerializationStrategy.JSON, this, keys)
   }
-  toBSON(): Object {
-    let keys = Object.keys(this)
+  toBSON(): object {
+    const keys = Object.keys(this)
     return Serialize(SerializationStrategy.BSON, this, keys)
   }
 }

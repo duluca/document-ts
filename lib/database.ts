@@ -21,7 +21,7 @@ export async function connect(
   let mongoOptions: MongoClientOptions = Object.assign(defaultMongoOptions)
 
   if (certFileUri) {
-    let certFileBuf = [readFileSync(certFileUri)]
+    const certFileBuf = [readFileSync(certFileUri)]
 
     mongoOptions = Object.assign(mongoOptions, {
       ssl: true,
@@ -92,7 +92,7 @@ export function connectionStatus() {
 
 export function getDbInstance(): Db {
   if (!dbInstance) {
-    throw 'Database is not yet instantiated'
+    throw new Error('Database is not yet instantiated')
   }
   return dbInstance
 }

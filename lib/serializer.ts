@@ -1,6 +1,6 @@
 export interface ISerializable {
-  toJSON(): Object
-  toBSON(): Object
+  toJSON(): object
+  toBSON(): object
   [index: string]: any
 }
 
@@ -13,23 +13,23 @@ export function Serialize(
   strategy: SerializationStrategy,
   document: ISerializable,
   keys?: string[]
-): Object {
-  var strategyFunc = strategy.toString()
+): object {
+  const strategyFunc = strategy.toString()
   if (!keys && document && typeof document[strategyFunc] === 'function') {
     return document[strategyFunc]()
   } else if (!keys) {
     return {}
   }
   keys = Array.from(new Set(keys))
-  let serializationTarget: { [index: string]: any } = {}
-  for (let key of keys) {
-    let child = document[key]
+  const serializationTarget: { [index: string]: any } = {}
+  for (const key of keys) {
+    const child = document[key]
 
     if (child && typeof child[strategyFunc] === 'function') {
       serializationTarget[key] = child[strategyFunc]()
     } else if (Array.isArray(child)) {
       serializationTarget[key] = []
-      for (let cc of child) {
+      for (const cc of child) {
         if (typeof cc === 'object') {
           serializationTarget[key].push(Serialize(strategy, cc))
         } else {

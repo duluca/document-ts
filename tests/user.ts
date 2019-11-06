@@ -60,8 +60,8 @@ export class User extends Document<IUser> implements IUser {
 
     this.password = await this.setPassword(password)
 
-    for (let i = 0; i < colors.length; i++) {
-      this.colors.push(Color.Build(colors[i]))
+    for (const element of colors) {
+      this.colors.push(Color.Build(element))
     }
 
     await this.save()
@@ -73,14 +73,14 @@ export class User extends Document<IUser> implements IUser {
   }
 
   private setPassword(newPassword: string): Promise<string> {
-    return new Promise<string>(function(resolve, reject) {
-      bcrypt.genSalt(10, function(err, salt) {
+    return new Promise<string>((resolve, reject) => {
+      bcrypt.genSalt(10, (err, salt) => {
         if (err) {
           return reject(err)
         }
-        bcrypt.hash(newPassword, salt, function(err, hash) {
-          if (err) {
-            return reject(err)
+        bcrypt.hash(newPassword, salt, (hashError, hash) => {
+          if (hashError) {
+            return reject(hashError)
           }
           resolve(hash)
         })
@@ -89,9 +89,9 @@ export class User extends Document<IUser> implements IUser {
   }
 
   comparePassword(password: string): Promise<boolean> {
-    let user = this
-    return new Promise(function(resolve, reject) {
-      bcrypt.compare(password, user.password, function(err, isMatch) {
+    const user = this
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, isMatch) => {
         if (err) {
           return reject(err)
         }
@@ -144,12 +144,13 @@ class UserCollectionFactory extends CollectionFactory<User> {
   }
 
   // This is a contrived example for demonstration purposes
-  // It is possible to execute far more sophisticated and high performance queries using Aggregation in MongoDB
+  // It is possible to execute far more sophisticated and
+  // high performance queries using Aggregation in MongoDB
   // Documentation: https://docs.mongodb.com/manual/aggregation/
   userSearchQuery(
     searchText: string
   ): AggregationCursor<{ _id: ObjectID; email: string }> {
-    let aggregateQuery = [
+    const aggregateQuery = [
       {
         $match: {
           $text: { $search: searchText },

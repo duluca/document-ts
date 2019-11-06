@@ -9,23 +9,19 @@ export interface IDocument extends IDbRecord {
   collectionName: string
 }
 
-export interface ICollectionProvider<TDocument extends IDocument> {
-  (): Collection<TDocument>
-}
+export type ICollectionProvider<TDocument extends IDocument> = () => Collection<TDocument>
 
-export interface Func<TResult> {
-  (): TResult
-}
+export type Func<TResult> = () => TResult
 
 export interface IQueryParameters {
   filter?: string
   skip?: number
   limit?: number
-  sortKeyOrList?: string | Object[] | Object
-  projectionKeyOrList?: string | Object[] | Object
+  sortKeyOrList?: string | object[] | object
+  projectionKeyOrList?: string | object[] | object
 }
 
-export interface IPaginationResult<TDocument extends IDocument | Object> {
+export interface IPaginationResult<TDocument extends IDocument | object> {
   data: TDocument[]
   total: number
 }
