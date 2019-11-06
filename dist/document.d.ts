@@ -8,8 +8,9 @@ export declare abstract class Document<TDocument extends IDocument> implements I
     constructor(collectionName: string, document?: Partial<TDocument>);
     protected abstract getCalculatedPropertiesToInclude(): string[];
     protected abstract getPropertiesToExclude(): string[];
-    protected fillData(data: any): void;
-    protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(objectArray: Partial<TInterface>[], hydrator: (object: Partial<TInterface>) => TObject, objectType: new () => TObject): TObject[];
+    protected abstract fillData(data?: Partial<TDocument>): void;
+    protected hydrateInterface<TInterface extends TObject, TObject extends object>(objectType: new () => TObject, hydrator: (data: Partial<TInterface>) => TObject, element: Partial<TInterface>): TObject;
+    protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(objectType: new () => TObject, hydrator: (data: Partial<TInterface>) => TObject, objectArray: Partial<TInterface>[]): TObject[] | undefined;
     private hasObjectId;
     save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean>;
     delete(): Promise<DeleteWriteOpResultObject>;

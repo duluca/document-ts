@@ -1,5 +1,7 @@
 import { Collection, ObjectID } from 'mongodb'
 
+import { ISerializable } from './serializer'
+
 export interface IDbRecord {
   _id: ObjectID
 }
@@ -9,7 +11,9 @@ export interface IDocument extends IDbRecord {
   collectionName: string
 }
 
-export type ICollectionProvider<TDocument extends IDocument> = () => Collection<TDocument>
+export type ICollectionProvider<
+  TDocument extends IDocument | ISerializable
+> = () => Collection<TDocument>
 
 export type Func<TResult> = () => TResult
 

@@ -1,6 +1,7 @@
 import { AggregationCursor, Cursor, FilterQuery, FindOneAndReplaceOption, FindOneOptions, MongoCountPreferences, UpdateQuery } from 'mongodb';
 import { Func, ICollectionProvider, IDbRecord, IDocument, IFilter, IPaginationResult, IQueryParameters } from './interfaces';
-export declare abstract class CollectionFactory<TDocument extends IDocument> {
+import { ISerializable } from './serializer';
+export declare abstract class CollectionFactory<TDocument extends IDocument & ISerializable> {
     collectionName: string;
     private documentType;
     searchableProperties: string[];
@@ -19,7 +20,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument> {
     getCursor(builtQuery: {}, projection: {}): Cursor<TDocument>;
     fieldsArrayToObject(fields: string[]): object;
     find<TReturnType extends IDbRecord>(query: FilterQuery<TDocument>, options?: FindOneOptions, skip?: number, limit?: number, hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
-    hydrateObject(document: unknown): TDocument | null;
+    hydrateObject(document: unknown): TDocument & ISerializable;
     count(query: FilterQuery<TDocument>, options?: MongoCountPreferences): Promise<number>;
     private tokenize;
     buildTokenizedQueryObject(filter: string, searchableProperties: string[]): object;

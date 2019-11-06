@@ -1,4 +1,4 @@
-export interface ISerializable {
+export interface ISerializable extends Object {
   toJSON(): object
   toBSON(): object
   [index: string]: any
@@ -28,12 +28,14 @@ export function Serialize(
     if (child && typeof child[strategyFunc] === 'function') {
       serializationTarget[key] = child[strategyFunc]()
     } else if (Array.isArray(child)) {
-      serializationTarget[key] = []
-      for (const cc of child) {
-        if (typeof cc === 'object') {
-          serializationTarget[key].push(Serialize(strategy, cc))
-        } else {
-          serializationTarget[key].push(cc)
+      if (child.length > 0) {
+        serializationTarget[key] = []
+        for (const cc of child) {
+          if (typeof cc === 'object') {
+            serializationTarget[key].push(Serialize(strategy, cc))
+          } else {
+            serializationTarget[key].push(cc)
+          }
         }
       }
     } else {

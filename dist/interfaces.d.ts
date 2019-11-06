@@ -1,4 +1,5 @@
 import { Collection, ObjectID } from 'mongodb';
+import { ISerializable } from './serializer';
 export interface IDbRecord {
     _id: ObjectID;
 }
@@ -6,7 +7,7 @@ export interface IDocument extends IDbRecord {
     _id: ObjectID;
     collectionName: string;
 }
-export declare type ICollectionProvider<TDocument extends IDocument> = () => Collection<TDocument>;
+export declare type ICollectionProvider<TDocument extends IDocument | ISerializable> = () => Collection<TDocument>;
 export declare type Func<TResult> = () => TResult;
 export interface IQueryParameters {
     filter?: string;

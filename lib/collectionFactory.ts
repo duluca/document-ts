@@ -20,8 +20,9 @@ import {
   IPaginationResult,
   IQueryParameters,
 } from './interfaces'
+import { ISerializable } from './serializer'
 
-export abstract class CollectionFactory<TDocument extends IDocument> {
+export abstract class CollectionFactory<TDocument extends IDocument & ISerializable> {
   constructor(
     public collectionName: string,
     private documentType: any,
@@ -49,7 +50,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
     const document = await this.collection().findOne(filter, options)
-    return this.hydrateObject(document)
+    return document ? this.hydrateObject(document) : null
   }
 
   async findOneAndUpdate(
@@ -59,7 +60,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
     const document = await this.collection().findOneAndUpdate(filter, update, options)
-    return this.hydrateObject(document.value)
+    return document.value ? this.hydrateObject(document.value) : null
   }
 
   async findWithPagination<TReturnType extends IDbRecord>(
@@ -67,7 +68,7 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
     query?: string | object,
     searchableProperties?: string[],
-    hydrate = false,
+    hydrate = true,
     debugQuery = false
   ): Promise<IPaginationResult<TReturnType>> {
     const collection = this
@@ -148,23 +149,27 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     cursor: Cursor<TDocument>,
     hydrate: boolean,
     collection: CollectionFactory<TDocument>
-  ): Promise<(TDocument | null)[]> {
-    const data: (TDocument | null)[] = []
-    await cursor.forEach(document =>
-      data.push(hydrate ? collection.hydrateObject(document) : document)
-    )
+  ): Promise<object[]> {
+    const data: object[] = []
+    await cursor.forEach(document => {
+      let doc = document as object
+      if (hydrate) {
+        doc = collection.hydrateObject(document).toJSON()
+      }
+      data.push(doc)
+    })
     return data
   }
 
   private async aggregationCursorStrategy<TReturnType>(
     cursor: AggregationCursor<TReturnType>
-  ): Promise<(TReturnType | undefined)[]> {
-    return new Promise<(TReturnType | undefined)[]>((resolve, reject) => {
-      const data: (TReturnType | undefined)[] = []
+  ): Promise<TReturnType[]> {
+    return new Promise<TReturnType[]>((resolve, reject) => {
+      const data: TReturnType[] = []
       cursor.each((err, document) => {
         if (err) {
           reject(err.message)
-        } else if (document == null) {
+        } else if (document === null) {
           resolve(data)
         } else {
           data.push((document as unknown) as TReturnType)
@@ -235,15 +240,14 @@ export abstract class CollectionFactory<TDocument extends IDocument> {
     )
   }
 
-  hydrateObject(document: unknown): TDocument | null {
-    if (document && document instanceof this.documentType) {
+  hydrateObject(document: unknown): TDocument & ISerializable {
+    if (document instanceof this.documentType) {
       return document as TDocument
-    } else if (document) {
+    } else {
       const newDocument = new this.documentType() as TDocument
-      Object.assign(newDocument, document)
+      newDocument.fillData(document)
       return newDocument
     }
-    return null
   }
 
   async count(
