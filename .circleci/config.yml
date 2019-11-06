@@ -29,10 +29,14 @@ jobs:
 
       # run tests!
       - run: npm run pretest
+      - run: npm run test:ci
+      - store_test_results:
+          path: ./test_results
+
+      # run code coverage
       - run: npm run test:nyc
 
-      - store_artifacts: # upload test coverage as artifact
+      - store_artifacts:
           path: ./coverage
-      - store_test_results:
-          path: ./coverage
+
       - coveralls/upload
