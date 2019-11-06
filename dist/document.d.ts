@@ -9,13 +9,11 @@ export declare abstract class Document<TDocument extends IDocument> implements I
     protected abstract getCalculatedPropertiesToInclude(): string[];
     protected abstract getPropertiesToExclude(): string[];
     protected fillData(data: any): void;
-    protected hydrateInterfaceArray<TInterface extends TObject, TObject extends Object>(objectArray: Partial<TInterface>[], hydrator: (object: Partial<TInterface>) => TObject, objectType: {
-        new (): TObject;
-    }): TObject[];
+    protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(objectArray: Partial<TInterface>[], hydrator: (object: Partial<TInterface>) => TObject, objectType: new () => TObject): TObject[];
     private hasObjectId;
     save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean>;
     delete(): Promise<DeleteWriteOpResultObject>;
     private fieldsToSerialize;
-    toJSON(): Object;
-    toBSON(): Object;
+    toJSON(): object;
+    toBSON(): object;
 }

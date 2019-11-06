@@ -1,8 +1,24 @@
 // Place your settings in this file to overwrite the default settings
 {
+    "debug.openExplorerOnEnd": true,
+
     "editor.tabSize": 2,
     "editor.rulers": [90],
+    "editor.autoIndent": true,
+    "editor.cursorBlinking": "solid",
+    "editor.formatOnType": false,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.minimap.enabled": false,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": false,
+        "source.fixAll.tslint": true
+    },
+
+    "explorer.openEditors.visible": 0,
+
     "files.trimTrailingWhitespace": true,
+    "files.autoSave": "onFocusChange",
     "files.exclude": {
         "**/.git": true,
         "**/.DS_Store": true,
@@ -12,5 +28,35 @@
         "**/*.js.map": {
             "when": "$(basename)"
         }
-    }
+    },
+
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+
+    "npm.enableScriptExplorer": true,
+
+    "typescript.tsdk": "node_modules/typescript/lib",
+
+    "workbench.iconTheme": "material-icon-theme",
+
+    "prettier.printWidth": 90,
+    "prettier.semi": false,
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "es5",
+
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#3566a7",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#611f3b",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "titleBar.activeBackground": "#294e80",
+        "titleBar.inactiveBackground": "#294e8099",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "statusBar.background": "#294e80",
+        "statusBarItem.hoverBackground": "#3566a7",
+        "statusBar.foreground": "#e7e7e7"
+    },
+    "peacock.color": "#294E80",
 }

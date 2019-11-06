@@ -1,30 +1,9 @@
 {
-  // Use IntelliSense to learn about possible Node.js debug attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
-
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
-      "program": "${workspaceRoot}/tests/standalone.js",
-      "cwd": "${workspaceRoot}",
-      "preLaunchTask": "npm: pretest",
-      "outFiles": []
-    },
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Process",
-      "port": 5858,
-      "outFiles": []
-    },
-    {
-      "type": "node",
-      "request": "launch",
+  "configurations": [{
       "name": "Jasmine Current Spec File",
+      "type": "node",
+      "request": "launch",
       "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
       "args": [
         "tests/${fileBasenameNoExtension}.js"
@@ -35,17 +14,13 @@
       "preLaunchTask": "npm: build:test"
     },
     {
+      "name": "Standalone Test",
       "type": "node",
       "request": "launch",
-      "name": "Jasmine collectionFactorySpec Test",
-      "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
-      "args": [
-        "tests/collectionFactorySpec.js"
-      ],
-      "env": {
-        "NODE_PATH": "."
-      },
-      "preLaunchTask": "npm: pretest"
+      "program": "${workspaceRoot}/tests/standalone.js",
+      "cwd": "${workspaceRoot}",
+      "preLaunchTask": "npm: pretest",
+      "outFiles": []
     }
   ]
 }

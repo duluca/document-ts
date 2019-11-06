@@ -9,7 +9,7 @@ import { IUser, User, UserCollection } from './user'
 let mongoServerInstance: MongoMemoryServer
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
-describe('Document', function() {
+describe('Document', () => {
   beforeEach(async () => {
     mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
     const uri = await mongoServerInstance.getConnectionString()
@@ -26,7 +26,7 @@ describe('Document', function() {
     let actualException = null
 
     try {
-      let user = new User()
+      const user = new User()
       await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
     } catch (ex) {
       actualException = ex
@@ -41,7 +41,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < 5; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -57,12 +57,12 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < 5; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
 
       for (let i = 0; i < 5; i++) {
-        let foundUser = await UserCollection.findOne({ lastName: `${i}` })
+        const foundUser = await UserCollection.findOne({ lastName: `${i}` })
         const expectedFullName = `${i} ${i}`
         expect(expectedFullName).toEqual(foundUser.fullName)
       }
@@ -78,7 +78,7 @@ describe('Document', function() {
     let actualException = null
 
     try {
-      let user = new User()
+      const user = new User()
       await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
     } catch (ex) {
       actualException = ex
@@ -92,7 +92,7 @@ describe('Document', function() {
     let actualException = null
 
     try {
-      let user = new User()
+      const user = new User()
       await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
       await user.create('Doguhan', 'Uluca1', 'duluca@gmail.com', 'user')
     } catch (ex) {
@@ -106,21 +106,21 @@ describe('Document', function() {
   })
 
   it('should fail to store two users with same email (unique index)', async () => {
-    let expectedResult = false
+    const expectedResult = false
     let actualResult = true
 
     await UserCollection.createIndexes()
 
     spyOn(console, 'error')
 
-    let user = new User({
+    const user = new User({
       firstName: 'Doguhan',
       lastName: 'Uluca',
       email: 'duluca@gmail.com',
       role: 'user',
     } as IUser)
     await user.save()
-    let user1 = new User({
+    const user1 = new User({
       firstName: 'Doguhan1',
       lastName: 'Uluca1',
       email: 'duluca@gmail.com',
@@ -137,7 +137,7 @@ describe('Document', function() {
     let actualException = null
 
     try {
-      let user = new User()
+      const user = new User()
       await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', '123456', [
         { hue: 'red', alpha: 0.5 },
       ])
@@ -158,7 +158,7 @@ describe('Document', function() {
     let actualException = null
 
     try {
-      let user = new User({
+      const user = new User({
         firstName: 'Doguhan',
         lastName: 'Uluca',
         email: 'duluca@gmail.com',
@@ -185,7 +185,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -212,7 +212,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -234,7 +234,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -258,7 +258,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -282,7 +282,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -309,7 +309,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -426,7 +426,7 @@ describe('Document', function() {
 
     try {
       for (let i = 0; i < expectedRecordCount; i++) {
-        let user = new User()
+        const user = new User()
         await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
       }
     } catch (ex) {
@@ -443,9 +443,9 @@ describe('Document', function() {
   it('should find a user', async () => {
     const expectedFirstName = 'Doguhan'
 
-    let user = new User()
+    const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
   })
@@ -453,9 +453,9 @@ describe('Document', function() {
   it('should find no records', async () => {
     const expectedFirstName = 'Doguhan'
 
-    let user = new User()
+    const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'asdfasd' })
+    const foundUser = await UserCollection.findOne({ lastName: 'asdfasd' })
 
     expect(foundUser).toBeNull()
   })
@@ -463,11 +463,11 @@ describe('Document', function() {
   it('should find a user by id', async () => {
     const expectedFirstName = 'Doguhan'
 
-    let user = new User()
+    const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
-    let foundByIdUser = await UserCollection.findOne({
+    const foundByIdUser = await UserCollection.findOne({
       _id: foundUser._id,
     })
 
@@ -477,11 +477,11 @@ describe('Document', function() {
   it('should find a user by hex id', async () => {
     const expectedFirstName = 'Doguhan'
 
-    let user = new User()
+    const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
-    let foundByIdUser = await UserCollection.findOne({
+    const foundByIdUser = await UserCollection.findOne({
       _id: foundUser._id.toHexString() as any,
     })
 
@@ -491,7 +491,7 @@ describe('Document', function() {
   it('should find and update a user', async () => {
     const expectedFirstName = 'Master'
 
-    let user = new User()
+    const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
 
     await UserCollection.findOneAndUpdate(
@@ -503,7 +503,7 @@ describe('Document', function() {
       }
     )
 
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFirstName).toEqual(foundUser.firstName)
   })
@@ -511,9 +511,9 @@ describe('Document', function() {
   it('should find a user with fullName', async () => {
     const expectedFullName = 'Doguhan Uluca'
 
-    let user = new User()
+    const user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(expectedFullName).toEqual(foundUser.fullName)
   })
@@ -521,13 +521,13 @@ describe('Document', function() {
   it('should find a user with password', async () => {
     const expectedPassword = 'acme'
 
-    let user = new User()
+    const user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user', 'acme')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
     expect(foundUser).toBeDefined()
 
-    let isMatch = await foundUser.comparePassword(expectedPassword)
+    const isMatch = await foundUser.comparePassword(expectedPassword)
 
     expect(isMatch).toBeTruthy()
   })
@@ -535,32 +535,32 @@ describe('Document', function() {
   it('should update user', async () => {
     const expectedFirstName = 'Blehamy'
 
-    let user = new User()
+    const user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
-    let foundByIdUser = await UserCollection.findOne({
+    const foundByIdUser = await UserCollection.findOne({
       _id: foundUser._id,
     })
 
     foundByIdUser.firstName = 'Blehamy'
 
-    let result = await foundByIdUser.save()
+    const result = await foundByIdUser.save()
 
     expect(result).toBeTruthy()
     expect(expectedFirstName).toEqual(foundByIdUser.firstName)
   })
 
   it('should return truthy when saving user with no changes', async () => {
-    let user = new User()
+    const user = new User()
     await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
-    let foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+    const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
-    let foundByIdUser = await UserCollection.findOne({
+    const foundByIdUser = await UserCollection.findOne({
       _id: foundUser._id,
     })
 
-    let result = await foundByIdUser.save()
+    const result = await foundByIdUser.save()
 
     expect(result).toBeTruthy()
   })

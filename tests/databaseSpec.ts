@@ -7,8 +7,8 @@ import { close, connect, connectionStatus, getDbInstance } from '../lib/index'
 let mongoServerInstance: MongoMemoryServer
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
-describe('Database', function() {
-  describe('disconnected', function() {
+describe('Database', () => {
+  describe('disconnected', () => {
     beforeEach(async () => {
       await close()
       if (mongoServerInstance) {
@@ -18,7 +18,7 @@ describe('Database', function() {
     })
 
     it('should throw exception given not instantiated', async () => {
-      const expectedException = 'Database is not yet instantiated'
+      const expectedException = new Error('Database is not yet instantiated')
       let actualException = null
 
       try {
@@ -66,7 +66,7 @@ describe('Database', function() {
     })
   })
 
-  describe('connected', function() {
+  describe('connected', () => {
     beforeEach(() => {
       mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
     })
@@ -79,7 +79,7 @@ describe('Database', function() {
     it('should connect', async () => {
       const expectedException = null
       let actualException = null
-      let expectedStatus = true
+      const expectedStatus = true
       let actualStatus = null
 
       const uri = await mongoServerInstance.getConnectionString()
@@ -96,7 +96,7 @@ describe('Database', function() {
 
     it('should fail to connect with no cert', async () => {
       const expectedException = new Error(
-        "ENOENT: no such file or directory, open 'server/compose-ca.pem'"
+        'ENOENT: no such file or directory, open \'server/compose-ca.pem\''
       )
       let actualException = null
 
