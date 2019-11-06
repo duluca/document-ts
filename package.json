@@ -13,6 +13,7 @@
     "prepare": "npm run build",
     "pretest": "npm run build && npm run build:test",
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=./jasmine.json",
+    "test:ci": "ts-node ./node_modules/jasmine-xml-reporter/bin/jasmine.js --config=./jasmine.json --junitreport --output=test_results/",
     "test:nyc": "nyc ts-node node_modules/jasmine/bin/jasmine --config=./jasmine.json",
     "standalone": "node tests/standalone"
   },
@@ -53,6 +54,7 @@
     "import-sort-style-module": "^6.0.0",
     "jasmine": "^3.5.0",
     "jasmine-node": "^3.0.0",
+    "jasmine-xml-reporter": "^1.2.1",
     "mongodb": "^3.3.3",
     "mongodb-memory-server": "^6.0.1",
     "nyc": "^14.1.1",
@@ -92,10 +94,7 @@
       "**/coverage"
     ],
     "reporter": [
-      "html",
-      "lcov",
-      "text",
-      "cobertura"
+      "lcov"
     ],
     "branches": 80,
     "lines": 89,
