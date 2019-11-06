@@ -96,7 +96,7 @@ describe('Database', () => {
 
     it('should fail to connect with no cert', async () => {
       const expectedException = new Error(
-        'ENOENT: no such file or directory, open \'server/compose-ca.pem\''
+        "ENOENT: no such file or directory, open 'server/compose-ca.pem'"
       )
       let actualException = null
 
