@@ -3,8 +3,7 @@
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { IDocument } from '../dist'
-import { ISerializable, close, connect } from '../lib/index'
+import { close, connect } from '../lib/index'
 import { IUser, User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
