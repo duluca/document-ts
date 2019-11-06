@@ -16,27 +16,32 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
+      # check npm dependencies for security risks - run 'npm audit' to fix
       - run: npx audit-ci --low --report-type full
 
+      # install dependecies
       - run: npm ci
-
-      - run: npm run standardize:ci
 
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # run tests!
+      # ensure code formatting standards are adhered to - run 'npm run standardize' to fix
+      - run: npm run standardize:ci
+
+      # run tests and store test results
       - run: npm run pretest
       - run: npm run test:ci
       - store_test_results:
           path: ./test_results
 
-      # run code coverage
+      # run code coverage and store coverage report
       - run: npm run test:nyc
-
       - store_artifacts:
           path: ./coverage
 
+      # upload coverage report to coveralls for readme badge support
+      # requires config.yml version 2.1 and orbs: coveralls: coveralls/coveralls@1.0.4
+      # requires coveralls account and token specific to repo to be stored in CircleCI
       - coveralls/upload
