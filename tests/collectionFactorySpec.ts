@@ -1,5 +1,3 @@
-'use strict'
-
 import { IUser, User, UserCollection } from './user'
 
 const expectedPassword = '$2a$10$pJsAxlvrV2hK9QWvdObYAOcvKrkI.VNyYtG01eYvJ2UYt8Keb2/6q'
