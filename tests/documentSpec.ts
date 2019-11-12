@@ -1,5 +1,3 @@
-'use strict'
-
 import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 

@@ -1,5 +1,3 @@
-'use strict'
-
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect, connectionStatus, getDbInstance } from '../lib/index'

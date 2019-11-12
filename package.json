@@ -73,34 +73,5 @@
       "style": "module",
       "options": {}
     }
-  },
-  "prettier": {
-    "printWidth": 90,
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "parser": "typescript"
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "all": true,
-    "check-coverage": true,
-    "extension": [
-      ".ts",
-      ".tsx"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "**/tests",
-      "**/coverage"
-    ],
-    "reporter": [
-      "lcov",
-      "text"
-    ],
-    "branches": 80,
-    "lines": 89,
-    "functions": 92,
-    "statements": 85
   }
 }
