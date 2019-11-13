@@ -1,57 +1,57 @@
 {
-    "debug.openExplorerOnEnd": true,
+  "debug.openExplorerOnEnd": true,
 
-    "editor.tabSize": 2,
-    "editor.rulers": [90],
-    "editor.autoIndent": true,
-    "editor.cursorBlinking": "solid",
-    "editor.formatOnType": false,
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.minimap.enabled": false,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": false,
-        "source.fixAll.tslint": true
+  "editor.tabSize": 2,
+  "editor.rulers": [90],
+  "editor.autoIndent": true,
+  "editor.cursorBlinking": "solid",
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.minimap.enabled": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": false,
+    "source.fixAll.tslint": true
+  },
+
+  "explorer.openEditors.visible": 0,
+
+  "files.trimTrailingWhitespace": true,
+  "files.autoSave": "onFocusChange",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/*.js": {
+      "when": "$(basename).ts"
     },
+    "**/*.js.map": {
+      "when": "$(basename)"
+    }
+  },
 
-    "explorer.openEditors.visible": 0,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
 
-    "files.trimTrailingWhitespace": true,
-    "files.autoSave": "onFocusChange",
-    "files.exclude": {
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/*.js": {
-            "when": "$(basename).ts"
-        },
-        "**/*.js.map": {
-            "when": "$(basename)"
-        }
-    },
+  "npm.enableScriptExplorer": true,
 
-    "git.confirmSync": false,
-    "git.enableSmartCommit": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
 
-    "npm.enableScriptExplorer": true,
+  "workbench.iconTheme": "material-icon-theme",
 
-    "typescript.tsdk": "node_modules/typescript/lib",
-
-    "workbench.iconTheme": "material-icon-theme",
-
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#3566a7",
-        "activityBar.activeBorder": "#611f3b",
-        "activityBar.foreground": "#e7e7e7",
-        "activityBar.inactiveForeground": "#e7e7e799",
-        "activityBarBadge.background": "#611f3b",
-        "activityBarBadge.foreground": "#e7e7e7",
-        "titleBar.activeBackground": "#294e80",
-        "titleBar.inactiveBackground": "#294e8099",
-        "titleBar.activeForeground": "#e7e7e7",
-        "titleBar.inactiveForeground": "#e7e7e799",
-        "statusBar.background": "#294e80",
-        "statusBarItem.hoverBackground": "#3566a7",
-        "statusBar.foreground": "#e7e7e7"
-    },
-    "peacock.color": "#294E80",
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#3566a7",
+    "activityBar.activeBorder": "#611f3b",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#611f3b",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "titleBar.activeBackground": "#294e80",
+    "titleBar.inactiveBackground": "#294e8099",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "statusBar.background": "#294e80",
+    "statusBarItem.hoverBackground": "#3566a7",
+    "statusBar.foreground": "#e7e7e7"
+  },
+  "peacock.color": "#294E80"
 }
