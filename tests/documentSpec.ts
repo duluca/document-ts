@@ -499,7 +499,7 @@ describe('Document', () => {
     const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
 
-    await UserCollection.findOneAndUpdate(
+    const updatedUser = await UserCollection.findOneAndUpdate(
       { lastName: 'Uluca' },
       {
         $set: {
@@ -510,6 +510,7 @@ describe('Document', () => {
 
     const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
+    expect(expectedFirstName).toEqual(updatedUser.firstName)
     expect(expectedFirstName).toEqual(foundUser.firstName)
   })
 
