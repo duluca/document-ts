@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-
     "outDir": "./dist",
     "sourceMap": true,
     "strict": true,
@@ -14,10 +13,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true,
-
+    "experimentalDecorators": true
   },
-  "include": [
-    "./lib"
-  ]
+  "include": ["./lib"]
 }
