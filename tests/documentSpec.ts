@@ -493,13 +493,13 @@ describe('Document', () => {
     expect(expectedFirstName).toEqual(foundByIdUser.firstName)
   })
 
-  it('should find and update a user', async () => {
+  fit('should find and update a user', async () => {
     const expectedFirstName = 'Master'
 
     const user = new User()
     await user.create(expectedFirstName, 'Uluca', 'duluca@gmail.com', 'user')
 
-    await UserCollection.findOneAndUpdate(
+    const updatedUser = await UserCollection.findOneAndUpdate(
       { lastName: 'Uluca' },
       {
         $set: {
@@ -510,6 +510,7 @@ describe('Document', () => {
 
     const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
 
+    expect(expectedFirstName).toEqual(updatedUser.firstName)
     expect(expectedFirstName).toEqual(foundUser.firstName)
   })
 
