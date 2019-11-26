@@ -1,6 +1,7 @@
 [![CircleCI](https://circleci.com/gh/duluca/DocumentTS.svg?style=svg)](https://circleci.com/gh/duluca/DocumentTS)
 [![DeepScan grade](https://deepscan.io/api/teams/1906/projects/4995/branches/38924/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=1906&pid=4995&bid=38924)
 [![Coverage Status](https://coveralls.io/repos/github/duluca/DocumentTS/badge.svg?branch=master)](https://coveralls.io/github/duluca/DocumentTS?branch=master)
+
 # DocumentTS 4
 
 A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
@@ -12,7 +13,8 @@ A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Docu
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
 ## Quick Start
-> Supports MongoDB v4.2, Mongo Driver 3.3.2 and TypeScript 3.6.3
+
+> Supports MongoDB v4+, Mongo Driver 3.3+ and TypeScript 3.7+
 
 - Add DocumentTS to your project with `npm install document-ts mongodb`
 - Connect to your Mongo database using `connect()`
@@ -122,6 +124,7 @@ export let UserCollection = new UserCollectionFactory(User)
 - `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
 
 - `findWithPagination` leverage query parameters for pagination and configuration
+
 ```js
 export interface IQueryParameters {
   filter?: string
@@ -214,4 +217,5 @@ Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definite
 - Run `npm test`
 
 ### Maintainers
-* **[Kenton Bocock](https://github.com/kentonbmax)**
+
+- **[Kenton Bocock](https://github.com/kentonbmax)**
