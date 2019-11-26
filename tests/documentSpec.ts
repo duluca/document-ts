@@ -493,7 +493,7 @@ describe('Document', () => {
     expect(expectedFirstName).toEqual(foundByIdUser.firstName)
   })
 
-  fit('should find and update a user', async () => {
+  it('should find and update a user', async () => {
     const expectedFirstName = 'Master'
 
     const user = new User()
