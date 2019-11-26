@@ -1,10 +1,9 @@
 'use strict'
 
-import { ObjectID } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect } from '../lib/index'
-import { IUser, User, UserCollection } from './user'
+import { User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
