@@ -53,5 +53,9 @@
     "statusBarItem.hoverBackground": "#3566a7",
     "statusBar.foreground": "#e7e7e7"
   },
-  "peacock.color": "#294E80"
+  "peacock.color": "#294E80",
+
+  "gitlens.menus": {
+    "editorGroup": false
+  }
 }
