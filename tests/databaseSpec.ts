@@ -43,18 +43,11 @@ describe('Database', () => {
       spyOn(console, 'log')
 
       try {
-        await connect(
-          'asdfasdf',
-          true,
-          0.01,
-          2,
-          null,
-          {
-            numberOfRetries: 0,
-            reconnectTries: 0,
-            reconnectInterval: 0,
-          }
-        )
+        await connect('asdfasdf', true, 0.01, 2, null, {
+          numberOfRetries: 0,
+          reconnectTries: 0,
+          reconnectInterval: 0,
+        })
       } catch (ex) {
         actualException = ex
       }
@@ -101,13 +94,7 @@ describe('Database', () => {
       const uri = await mongoServerInstance.getConnectionString()
 
       try {
-        await connect(
-          uri,
-          true,
-          null,
-          null,
-          'server/compose-ca.pem'
-        )
+        await connect(uri, true, null, null, 'server/compose-ca.pem')
       } catch (ex) {
         actualException = ex
       }
@@ -122,12 +109,7 @@ describe('Database', () => {
       const uri = await mongoServerInstance.getConnectionString()
 
       try {
-        await connect(
-          uri,
-          false,
-          null,
-          null
-        )
+        await connect(uri, false, null, null)
       } catch (ex) {
         actualException = ex
       }
