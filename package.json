@@ -7,6 +7,8 @@
   "scripts": {
     "standardize": "import-sort --write \"{lib,tests}/**/*.ts\" && prettier-tslint fix \"{lib,tests}/**/*.ts\"",
     "standardize:ci": "import-sort -l \"{lib,tests}/**/*.ts\" && prettier-tslint check \"{lib,tests}/**/*.ts\"",
+    "lint": "tslint --config tslint.json --project .",
+    "lint:fix": "tslint --config tslint.json --fix --project .",
     "build": "tsc -p tsconfig.lib.json",
     "build:test": "tsc -p tests/tsconfig.spec.json",
     "prepublishOnly": "npm run test",
@@ -64,6 +66,7 @@
     "source-map-support": "^0.5.16",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.1",
+    "tslint-etc": "^1.9.2",
     "typescript": "^3.7.2",
     "uuid": "^3.3.3"
   },
