@@ -27,8 +27,9 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # ensure code formatting standards are adhered to - run 'npm run standardize' to fix
+      # ensure code style standards are adhered to - run 'npm run standardize' to fix
       - run: npm run standardize:ci
+      - run: npm run lint
 
       # run tests and store test results
       - run: npm run pretest
