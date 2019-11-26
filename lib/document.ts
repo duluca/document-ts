@@ -14,8 +14,8 @@ const defaultExcludes = ['collectionName', 'includes', 'excludes']
 
 export abstract class Document<TDocument extends IDocument>
   implements IDocument, ISerializable {
-  // tslint:disable-next-line: variable-name semicolon
-  public _id: ObjectID;
+  // tslint:disable-next-line: semicolon
+  public '_id': ObjectID;
   [index: string]: any
 
   constructor(public collectionName: string, document?: Partial<TDocument>) {
