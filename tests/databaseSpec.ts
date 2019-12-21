@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { close, connect, connectionStatus, getDbInstance } from '../lib/index'
+import { close, connect, connectionStatus, getDbInstance } from '../src/index'
 
 let mongoServerInstance: MongoMemoryServer
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000

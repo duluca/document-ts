@@ -9,7 +9,7 @@
     "style": "import-sort -l \"{lib,tests}/**/*.ts\" && prettier --check \"{lib,tests}/**/*.ts\"",
     "lint": "tslint --config tslint.json --project .",
     "lint:fix": "tslint --config tslint.json --fix --project .",
-    "build": "tsc -p tsconfig.lib.json",
+    "build": "tsc -p tsconfig.src.json",
     "build:test": "tsc -p tests/tsconfig.spec.json",
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",

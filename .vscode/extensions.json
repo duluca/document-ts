@@ -7,7 +7,6 @@
     "amatiasq.sort-imports",
     "esbenp.prettier-vscode",
     "DSKWRK.vscode-generate-getter-setter",
-    "esbenp.prettier-vscode",
     "WallabyJs.quokka-vscode",
     "ms-vscode.vscode-typescript-tslint-plugin"
   ]
