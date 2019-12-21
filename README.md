@@ -6,12 +6,26 @@
 
 A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
-> Check out the sample full-stack project [Minimal MEAN](https://github.com/excellalabs/minimal-mean)
+> Check out the sample full-stack project [Lemon Mart Server](https://github.com/duluca/lemon-mart-server)
 
 > Check out my book _Angular 6 for Enterprise-Ready Web Applications_. Get it on http://AngularForEnterprise.com.
 
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
+## Major Features
+
+- `connect()`
+
+  _MongoDB async connection harness_
+  
+  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
+- `Document` and `IDocument`
+
+  _Base Class and Interface to help define your own models_
+- `CollectionFactory`
+
+  _Define collections, organize indexes and aggregate queries alongside collection implementation_
+  
 ## Quick Start
 
 > Supports MongoDB v4+, Mongo Driver 3.3+ and TypeScript 3.7+
@@ -166,16 +180,7 @@ export interface IQueryParameters {
   }
 ```
 
-See the Minimal MEAN sample project for usage - https://github.com/excellalabs/minimal-mean
-
-## Features
-
-- `connect()`
-  _MongoDB async connection harness_
-  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
-- `Document` and `IDocument`
-  _Base Class and Interface to help define your own models_
-  ...
+See the Lemon Mart Server sample project for usage - https://github.com/duluca/lemon-mart-server
 
 ## Goals
 
