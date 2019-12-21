@@ -1,8 +1,9 @@
 {
   "debug.openExplorerOnEnd": true,
-
   "editor.tabSize": 2,
-  "editor.rulers": [90],
+  "editor.rulers": [
+    90
+  ],
   "editor.autoIndent": "full",
   "editor.cursorBlinking": "solid",
   "editor.formatOnType": false,
@@ -11,11 +12,9 @@
   "editor.minimap.enabled": false,
   "editor.codeActionsOnSave": {
     "source.organizeImports": false,
-    "source.fixAll.tslint": true,
+    "source.fixAll.tslint": true
   },
-
   "explorer.openEditors.visible": 0,
-
   "files.trimTrailingWhitespace": true,
   "files.autoSave": "onFocusChange",
   "files.exclude": {
@@ -28,16 +27,11 @@
       "when": "$(basename)"
     }
   },
-
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
-
   "npm.enableScriptExplorer": true,
-
   "typescript.tsdk": "node_modules/typescript/lib",
-
   "workbench.iconTheme": "material-icon-theme",
-
   "workbench.colorCustomizations": {
     "activityBar.background": "#3566a7",
     "activityBar.activeBorder": "#611f3b",
@@ -54,8 +48,13 @@
     "statusBar.foreground": "#e7e7e7"
   },
   "peacock.color": "#294E80",
-
   "gitlens.menus": {
     "editorGroup": false
-  }
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[html]": {
+    "editor.defaultFormatter": "HookyQR.beautify"
+  },
+  "auto-close-tag.SublimeText3Mode": true,
+  "html.autoClosingTags": false
 }
