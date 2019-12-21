@@ -42,3 +42,4 @@ declarations
 .DS_Store
 !specs.js
 test_results
+.env

@@ -2,7 +2,7 @@
 
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { close, connect } from '../lib/index'
+import { close, connect } from '../src/index'
 import { User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
