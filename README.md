@@ -26,14 +26,17 @@ A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Docu
 
   _Define collections, organize indexes and aggregate queries alongside collection implementation. Below are the convenience features of a DocumentTS collection_
     -  `get collection` returns the navtive MongoDB collection, so you can directly operate on it
+    
     ```js
     get collection(): ICollectionProvider<TDocument>
     ```
     - `aggregate` allows you run a MongoDB aggregation pipeline
+    
     ```js
     aggregate(pipeline: object[]): AggregationCursor<TDocument>
     ```
     - `findOne` and `findOneAndUpdate` simplifies the operation of commonly used database functionality, automatically hydrating the models it returns
+    
     ```js
     async findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions)
     async findOneAndUpdate(
@@ -43,16 +46,17 @@ A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Docu
      ): Promise<TDocument | null>
      ```
      - `findWithPagination` is by far the best feature of DocumentTS, allowing you filter, sort, and paginate large collections of data. This function is geared towards use with data tables, so you specifies searchable properties, turn off hydration, and use a debug feature to fine tune your queries.
-      ```js
-      async findWithPagination<TReturnType extends IDbRecord>(
-        queryParams: Partial<IQueryParameters> & object,
-        aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
-        query?: string | object,
-        searchableProperties?: string[],
-        hydrate = true,
-        debugQuery = false
-      ): Promise<IPaginationResult<TReturnType>>
-      ```
+     
+    ```js
+    async findWithPagination<TReturnType extends IDbRecord>(
+      queryParams: Partial<IQueryParameters> & object,
+      aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
+      query?: string | object,
+      searchableProperties?: string[],
+      hydrate = true,
+      debugQuery = false
+    ): Promise<IPaginationResult<TReturnType>>
+    ```
       
 ## Quick Start
 
