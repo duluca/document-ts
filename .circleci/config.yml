@@ -17,14 +17,14 @@ jobs:
             - v1-dependencies-
 
       # check npm dependencies for security risks - run 'npm audit' to fix
-      - run: npx audit-ci -m -w decompress
+      - run: npx audit-ci -m --report-type full -w decompress
 
       # install dependecies
       - run: npm ci
 
       - save_cache:
           paths:
-            - node_modules
+            - ~/.npm
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # ensure code style standards are adhered to - run 'npm run style:fix' to fix
