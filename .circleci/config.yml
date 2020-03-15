@@ -17,7 +17,7 @@ jobs:
             - v1-dependencies-
 
       # check npm dependencies for security risks - run 'npm audit' to fix
-      - run: npx audit-ci --low --report-type full -w decompress
+      - run: npx audit-ci -m -w decompress
 
       # install dependecies
       - run: npm ci
