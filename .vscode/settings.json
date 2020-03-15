@@ -34,6 +34,7 @@
   "workbench.iconTheme": "material-icon-theme",
   "workbench.colorCustomizations": {
     "activityBar.background": "#3566a7",
+    "activityBar.activeBackground": "#3566a7",
     "activityBar.activeBorder": "#611f3b",
     "activityBar.foreground": "#e7e7e7",
     "activityBar.inactiveForeground": "#e7e7e799",
