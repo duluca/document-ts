@@ -1,8 +1,8 @@
+<img src="https://user-images.githubusercontent.com/822159/76696101-03818400-665e-11ea-9f31-5464c274d08c.png" alt="Minimal MEAN" width="250"/>
+
 [![CircleCI](https://circleci.com/gh/duluca/document-ts.svg?style=svg)](https://circleci.com/gh/duluca/document-ts)
 [![DeepScan grade](https://deepscan.io/api/teams/1906/projects/8210/branches/94244/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=1906&pid=8210&bid=94244)
 [![Coverage Status](https://coveralls.io/repos/github/duluca/document-ts/badge.svg?branch=master)](https://coveralls.io/github/duluca/document-ts?branch=master)
-
-# DocumentTS 4
 
 A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
