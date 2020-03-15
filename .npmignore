@@ -1,4 +1,14 @@
+.vscode/
+.circleci/
 src/
 tests/
-tsconfig.json
+tsconfig*.json
 jasmine.json
+tslint.json
+pull_request_template.md
+dev-norms.md
+.*rc
+.*ignore
+.env
+*.env
+*.tgz
