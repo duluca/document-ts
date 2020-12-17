@@ -4,6 +4,9 @@
 [![DeepScan grade](https://deepscan.io/api/teams/1906/projects/8210/branches/94244/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=1906&pid=8210&bid=94244)
 [![Coverage Status](https://coveralls.io/repos/github/duluca/document-ts/badge.svg?branch=master)](https://coveralls.io/github/duluca/document-ts?branch=master)
 
+[![npm](https://img.shields.io/npm/v/document-ts)](https://www.npmjs.com/package/document-ts)
+[![npm](https://img.shields.io/npm/dt/document-ts)](https://www.npmjs.com/package/document-ts)
+
 A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
 
 > Check out the sample full-stack project [Lemon Mart Server](https://github.com/duluca/lemon-mart-server)
