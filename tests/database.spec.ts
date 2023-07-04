@@ -43,23 +43,21 @@ describe('Database', () => {
       spyOn(console, 'log')
 
       try {
-        await connect('asdfasdf', true, 0.01, 2, null, {
-          numberOfRetries: 0,
-          reconnectTries: 0,
-          reconnectInterval: 0,
-        })
+        await connect('asdfasdf', true, 0.01, 2, null, {})
       } catch (ex) {
         actualException = ex
       }
 
       expect(actualException).toBeDefined()
-      expect(console.log).toHaveBeenCalledTimes(4)
+      expect(console.log).toHaveBeenCalledTimes(5)
     })
   })
 
   describe('connected', () => {
-    beforeEach(() => {
-      mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
+    beforeEach(async () => {
+      mongoServerInstance = await MongoMemoryServer.create({
+        instance: { dbName: 'testDb' },
+      })
     })
 
     afterEach(async () => {
@@ -73,7 +71,7 @@ describe('Database', () => {
       const expectedStatus = true
       let actualStatus = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
       try {
         await connect(uri)
         actualStatus = connectionStatus()
@@ -91,7 +89,7 @@ describe('Database', () => {
       )
       let actualException = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
 
       try {
         await connect(uri, true, null, null, 'server/compose-ca.pem')
@@ -106,7 +104,7 @@ describe('Database', () => {
       const expectedException = null
       let actualException = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
 
       try {
         await connect(uri, false, null, null)

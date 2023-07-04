@@ -1,5 +1,5 @@
 export declare class DocumentException extends Error {
-    message: string;
+    error: string | Error;
     name: string;
-    constructor(message: string);
+    constructor(error: string | Error);
 }

@@ -1,9 +1,4 @@
-import {
-  CollectionInsertOneOptions,
-  DeleteWriteOpResultObject,
-  ObjectID,
-  ReplaceOneOptions,
-} from 'mongodb'
+import { InsertOneOptions, DeleteResult, ObjectId, UpdateOptions } from 'mongodb'
 
 import { getDbInstance } from './database'
 import { DocumentException } from './documentException'
@@ -13,10 +8,11 @@ import { ISerializable, SerializationStrategy, Serialize } from './serializer'
 const defaultExcludes = ['collectionName', 'includes', 'excludes']
 
 export abstract class Document<TDocument extends IDocument>
-  implements IDocument, ISerializable {
+  implements IDocument, ISerializable
+{
   // tslint:disable-next-line: semicolon
-  public '_id': ObjectID;
-  [index: string]: any
+  public '_id': ObjectId;
+  [index: string]: unknown
 
   constructor(public collectionName: string, document?: Partial<TDocument>) {
     if (document) {
@@ -46,18 +42,18 @@ export abstract class Document<TDocument extends IDocument>
     if (!objectArray || objectArray.length === 0) {
       return undefined
     }
-    return objectArray.map(e => this.hydrateInterface(objectType, hydrator, e))
+    return objectArray.map((e) => this.hydrateInterface(objectType, hydrator, e))
   }
 
   private hasObjectId(): boolean {
-    if (this._id && this._id.generationTime) {
-      return ObjectID.isValid(this._id.generationTime)
+    if (this._id && this._id.getTimestamp()) {
+      return ObjectId.isValid(this._id)
     }
 
     return false
   }
 
-  async save(options?: CollectionInsertOneOptions | ReplaceOneOptions): Promise<boolean> {
+  async save(options?: InsertOneOptions | UpdateOptions): Promise<boolean> {
     try {
       if (!this.hasObjectId()) {
         try {
@@ -65,13 +61,17 @@ export abstract class Document<TDocument extends IDocument>
             .collection(this.collectionName)
             .insertOne(this, options)
 
-          if (result.insertedCount > 0) {
-            this.fillData(result.ops[0])
+          if (result.acknowledged) {
+            this._id = result.insertedId
           }
-          return result.insertedCount === 1
-        } catch (ex) {
-          console.error(ex)
-          throw new DocumentException(ex)
+          return result.acknowledged
+        } catch (ex: unknown) {
+          console.error(ex instanceof Error ? ex.message : ex)
+
+          if (ex instanceof Error || typeof ex === 'string') {
+            throw new DocumentException(ex)
+          }
+          return false
         }
       } else {
         const result = await getDbInstance()
@@ -89,19 +89,16 @@ export abstract class Document<TDocument extends IDocument>
     }
   }
 
-  delete(): Promise<DeleteWriteOpResultObject> {
-    const document = this
+  delete(): Promise<DeleteResult> {
     const collection = getDbInstance().collection(this.collectionName)
-    return collection.deleteOne({ _id: document._id })
+    return collection.deleteOne({ _id: this._id })
   }
 
   private fieldsToSerialize(excludes: string[] = [], includes: string[] = []) {
-    const document = this
-
     excludes = defaultExcludes.concat(excludes)
 
-    const keys = new Array()
-    Object.keys(document).forEach(item => {
+    const keys: string[] = []
+    Object.keys(this).forEach((item) => {
       if (!(excludes.indexOf(item) > -1)) {
         keys.push(item)
       }

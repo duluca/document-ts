@@ -1,9 +1,10 @@
 import { readFileSync } from 'fs'
 
-import { Db, MongoClient, MongoClientOptions } from 'mongodb'
+import { Db, MongoClient, MongoClientOptions, MongoError } from 'mongodb'
 
 let dbInstance: Db | null
 let mongoClient: MongoClient | null
+let _connectionStatus = false
 
 export async function connect(
   mongoUri: string,
@@ -13,12 +14,8 @@ export async function connect(
   certFileUri?: string,
   overrideOptions?: MongoClientOptions
 ) {
-  const defaultMongoOptions: MongoClientOptions = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-
-  let mongoOptions: MongoClientOptions = Object.assign(defaultMongoOptions)
+  let mongoOptions: MongoClientOptions = {}
+  console.log(`Connecting to database... Prod mode: ${isProduction}.`)
 
   if (certFileUri) {
     const certFileBuf = [readFileSync(certFileUri)]
@@ -31,12 +28,8 @@ export async function connect(
     })
   }
 
-  if (isProduction === false) {
-    mongoOptions = Object.assign(defaultMongoOptions)
-  }
-
   let retryAttempt = 0
-  let lastException
+  let lastException: MongoError | null = null
 
   if (!connectionRetryMax) {
     connectionRetryMax = 1
@@ -50,10 +43,16 @@ export async function connect(
     try {
       mongoClient = await MongoClient.connect(mongoUri, mongoOptions)
       dbInstance = mongoClient.db()
-    } catch (ex) {
+      _connectionStatus = true
+    } catch (ex: unknown) {
+      _connectionStatus = false
       retryAttempt++
-      lastException = ex
-      console.log(ex.message)
+      if (ex instanceof Error) {
+        console.log(ex.message)
+      }
+      if (ex instanceof MongoError) {
+        lastException = ex
+      }
       if (connectionRetryWait) {
         console.log(`${retryAttempt}: Retrying in ${connectionRetryWait}s...`)
         await sleep(connectionRetryWait)
@@ -67,12 +66,12 @@ export async function connect(
         'Unable to connect to the database, please verify that your configuration is correct'
       )
     }
-    throw new Error(lastException)
+    throw lastException
   }
 }
 
 function sleep(seconds: number) {
-  return new Promise(resolve => setTimeout(resolve, seconds * 1000))
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000))
 }
 
 export async function close(force = false) {
@@ -80,12 +79,13 @@ export async function close(force = false) {
     await mongoClient.close(force)
     dbInstance = null
     mongoClient = null
+    _connectionStatus = false
   }
 }
 
 export function connectionStatus() {
   if (mongoClient) {
-    return mongoClient.isConnected()
+    return _connectionStatus
   }
   return false
 }

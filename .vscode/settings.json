@@ -1,9 +1,7 @@
 {
   "debug.openExplorerOnEnd": true,
   "editor.tabSize": 2,
-  "editor.rulers": [
-    90
-  ],
+  "editor.rulers": [90],
   "editor.autoIndent": "full",
   "editor.cursorBlinking": "solid",
   "editor.formatOnType": false,
@@ -57,5 +55,8 @@
     "editor.defaultFormatter": "HookyQR.beautify"
   },
   "auto-close-tag.SublimeText3Mode": true,
-  "html.autoClosingTags": false
+  "html.autoClosingTags": false,
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

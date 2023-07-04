@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect } from '../src/index'
@@ -9,8 +9,10 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
 describe('Document', () => {
   beforeEach(async () => {
-    mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
-    const uri = await mongoServerInstance.getConnectionString()
+    mongoServerInstance = await MongoMemoryServer.create({
+      instance: { dbName: 'testDb' },
+    })
+    const uri = mongoServerInstance.getUri()
     await connect(uri)
   })
 
@@ -291,7 +293,7 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
     const results = await UserCollection.findWithPagination<{
-      _id: ObjectID
+      _id: ObjectId
       email: string
     }>({ skip: 10, limit: 10 }, aggregateQueryGetter)
     expect(expectedRecordCount).toBe(results.total)
@@ -318,7 +320,7 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
     const results = await UserCollection.findWithPagination<{
-      _id: ObjectID
+      _id: ObjectId
       email: string
     }>({ skip: 10, limit: 10 }, aggregateQueryGetter)
     expect(expectedRecordCount).toBe(results.total)
@@ -362,7 +364,7 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
     const results = await UserCollection.findWithPagination<{
-      _id: ObjectID
+      _id: ObjectId
       email: string
       fullName: string
     }>({
@@ -415,7 +417,7 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
     const results = await UserCollection.findWithPagination<{
-      _id: ObjectID
+      _id: ObjectId
       email: string
     }>({}, aggregateQueryGetter)
     expect(expectedSearchResults).toBe(results.total)

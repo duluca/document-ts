@@ -43,3 +43,4 @@ declarations
 !specs.js
 test_results
 .env
+!.eclintrc.js

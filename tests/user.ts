@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs'
-import { AggregationCursor, ObjectID } from 'mongodb'
+import { AggregationCursor, ObjectId } from 'mongodb'
 import { v4 as uuid } from 'uuid'
 
 import { CollectionFactory, Document, IDocument } from '../src/index'
@@ -106,7 +106,7 @@ export class User extends Document<IUser> implements IUser {
     })
   }
 
-  hasSameId(id: ObjectID): boolean {
+  hasSameId(id: ObjectId): boolean {
     return this._id.toHexString() === id.toHexString()
   }
 
@@ -155,7 +155,7 @@ class UserCollectionFactory extends CollectionFactory<User> {
   // Documentation: https://docs.mongodb.com/manual/aggregation/
   userSearchQuery(
     searchText: string
-  ): AggregationCursor<{ _id: ObjectID; email: string }> {
+  ): AggregationCursor<{ _id: ObjectId; email: string }> {
     const aggregateQuery = [
       {
         $match: {
