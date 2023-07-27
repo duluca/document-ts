@@ -1,4 +1,4 @@
-import { AggregationCursor, Filter, FindOneAndReplaceOptions, FindOptions, CountDocumentsOptions, UpdateFilter, FindCursor, Sort, SortDirection } from 'mongodb';
+import { AggregationCursor, Filter, FindOptions, CountDocumentsOptions, UpdateFilter, FindCursor, Sort, SortDirection, FindOneAndUpdateOptions } from 'mongodb';
 import { Func, ICollectionProvider, IDbRecord, IDocument, IFilter, IPaginationResult, IQueryParameters } from './interfaces';
 import { ISerializable } from './serializer';
 export declare abstract class CollectionFactory<TDocument extends IDocument & ISerializable> {
@@ -10,7 +10,7 @@ export declare abstract class CollectionFactory<TDocument extends IDocument & IS
     get collection(): ICollectionProvider<TDocument>;
     aggregate(pipeline: object[]): AggregationCursor<TDocument>;
     findOne(filter: Filter<TDocument>, options?: FindOptions): Promise<TDocument | null>;
-    findOneAndUpdate(filter: Filter<TDocument>, update: TDocument | UpdateFilter<TDocument>, options?: FindOneAndReplaceOptions): Promise<TDocument | null>;
+    findOneAndUpdate(filter: Filter<TDocument>, update: TDocument | UpdateFilter<TDocument>, options?: FindOneAndUpdateOptions): Promise<TDocument | null>;
     findWithPagination<TReturnType extends IDbRecord>(queryParams: Partial<IQueryParameters> & object, aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>, query?: string | object, searchableProperties?: string[], hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
     private buildCursor;
     private findCursorStrategy;

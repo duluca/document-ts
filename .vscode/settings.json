@@ -44,7 +44,11 @@
     "titleBar.inactiveForeground": "#e7e7e799",
     "statusBar.background": "#294e80",
     "statusBarItem.hoverBackground": "#3566a7",
-    "statusBar.foreground": "#e7e7e7"
+    "statusBar.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#3566a7",
+    "statusBarItem.remoteBackground": "#294e80",
+    "statusBarItem.remoteForeground": "#e7e7e7"
   },
   "peacock.color": "#294E80",
   "gitlens.menus": {

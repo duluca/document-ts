@@ -1,7 +1,6 @@
 import {
   AggregationCursor,
   Filter,
-  FindOneAndReplaceOptions,
   FindOptions,
   CountDocumentsOptions,
   ObjectId,
@@ -9,6 +8,7 @@ import {
   FindCursor,
   Sort,
   SortDirection,
+  FindOneAndUpdateOptions,
 } from 'mongodb'
 
 import { getDbInstance } from './database'
@@ -64,10 +64,10 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
   async findOneAndUpdate(
     filter: Filter<TDocument>,
     update: TDocument | UpdateFilter<TDocument>,
-    options?: FindOneAndReplaceOptions
+    options?: FindOneAndUpdateOptions
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
-    const document = await this.collection().findOneAndUpdate(filter, update, options)
+    const document = options ? await this.collection().findOneAndUpdate(filter, update, options) : await this.collection().findOneAndUpdate(filter, update)
     return document.value ? this.hydrateObject(document.value) : null
   }
 
