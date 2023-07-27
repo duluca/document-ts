@@ -320,6 +320,7 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     } else if (!Array.isArray(sortKeyOrList)) {
       return [sortKeyOrList]
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return sortKeyOrList.map((key) => this.keyToObject(key, negativeValue))
     }
   }

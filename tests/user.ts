@@ -177,4 +177,4 @@ class UserCollectionFactory extends CollectionFactory<User> {
   }
 }
 
-export let UserCollection = new UserCollectionFactory(User)
+export const UserCollection = new UserCollectionFactory(User)
