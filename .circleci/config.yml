@@ -4,7 +4,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/node:lts
+      - image: cimg/node:current
 
     working_directory: ~/repo
 
