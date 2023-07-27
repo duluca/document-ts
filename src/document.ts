@@ -14,7 +14,10 @@ export abstract class Document<TDocument extends IDocument>
   public '_id': ObjectId;
   [index: string]: unknown
 
-  constructor(public collectionName: string, document?: Partial<TDocument>) {
+  constructor(
+    public collectionName: string,
+    document?: Partial<TDocument>
+  ) {
     if (document) {
       this.fillData(document)
     }

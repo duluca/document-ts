@@ -6,7 +6,10 @@ export interface IColor {
 }
 
 export class Color implements IColor, ISerializable {
-  constructor(public hue = '', public alpha = 0) {}
+  constructor(
+    public hue = '',
+    public alpha = 0
+  ) {}
 
   static Build(color?: IColor) {
     if (color) {

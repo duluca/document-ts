@@ -67,7 +67,9 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     options?: FindOneAndUpdateOptions
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
-    const document = options ? await this.collection().findOneAndUpdate(filter, update, options) : await this.collection().findOneAndUpdate(filter, update)
+    const document = options
+      ? await this.collection().findOneAndUpdate(filter, update, options)
+      : await this.collection().findOneAndUpdate(filter, update)
     return document.value ? this.hydrateObject(document.value) : null
   }
 
