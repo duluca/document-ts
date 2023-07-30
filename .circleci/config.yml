@@ -10,9 +10,9 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          command: |
-            sudo apt install libssl-dev libssl1.1
+      # - run:
+      #     command: |
+      #       sudo apt install libssl-dev libssl1.1
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}

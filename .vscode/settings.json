@@ -62,5 +62,8 @@
   "html.autoClosingTags": false,
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
   }
 }
