@@ -103,8 +103,8 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     const executionCursor = this.buildQuery(cursor, queryParams)
     let loadStrategy: Promise<TReturnType[]>
 
-    if (debugQuery && executionCursor) {
-      console.log(debugQuery)
+    if (debugQuery) {
+      console.log(executionCursor)
     }
 
     if (executionCursor instanceof AggregationCursor) {
