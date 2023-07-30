@@ -10,9 +10,11 @@ jobs:
 
     steps:
       - checkout
-      # - run:
-      #     command: |
-      #       sudo apt install libssl-dev libssl1.1
+      - run:
+          name: Install libssl1.1
+          command: |
+            wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+            sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
