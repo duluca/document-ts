@@ -44,3 +44,4 @@ declarations
 !specs.js
 test_results
 .env
+junit.xml

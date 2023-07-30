@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { describe, expect, test, beforeEach, afterEach } from '@jest/globals'
+
 import { IUser, User, UserCollection } from './user'
 
 const expectedPassword = '$2a$10$pJsAxlvrV2hK9QWvdObYAOcvKrkI.VNyYtG01eYvJ2UYt8Keb2/6q'
@@ -22,7 +28,7 @@ describe('CollectionFactory', () => {
 
   afterEach(async () => {})
 
-  it('should hydrate object', async () => {
+  test('should hydrate object', async () => {
     const expectedUser = getExpectedUser()
 
     const actualUser = UserCollection.hydrateObject(
@@ -35,7 +41,7 @@ describe('CollectionFactory', () => {
     expect(actualUser).toEqual(expectedUser)
   })
 
-  it('should not serialize private property password', async () => {
+  test('should not serialize private property password', async () => {
     const actualUser = UserCollection.hydrateObject(
       Object.assign(newUser, {
         password: expectedPassword,
@@ -45,7 +51,7 @@ describe('CollectionFactory', () => {
     expect((actualUser.toJSON() as any).password).toBeUndefined()
   })
 
-  it('should serialize calculate property fullname', async () => {
+  test('should serialize calculate property fullname', async () => {
     const expectedFullName = 'Doguhan Uluca'
 
     const actualUser = UserCollection.hydrateObject(newUser)

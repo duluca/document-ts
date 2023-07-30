@@ -33,14 +33,12 @@ jobs:
 
       # run tests and store test results
       - run: npm run pretest
-      - run: npm run test:ci
+      - run:
+          command: npm run test:ci
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results/
       - store_test_results:
           path: ./test_results
-
-      # run code coverage and store coverage report
-      - run: npm run test:nyc
-      - store_artifacts:
-          path: ./coverage
 
       # upload coverage report to coveralls for readme badge support
       # requires config.yml version 2.1 and orbs: coveralls: coveralls/coveralls@1.0.4

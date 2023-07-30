@@ -95,9 +95,8 @@ export class User extends Document<IUser> implements IUser {
   }
 
   comparePassword(password: string): Promise<boolean> {
-    const user = this
     return new Promise((resolve, reject) => {
-      bcrypt.compare(password, user.password, (err, isMatch) => {
+      bcrypt.compare(password, this.password, (err, isMatch) => {
         if (err) {
           return reject(err)
         }
@@ -170,7 +169,7 @@ class UserCollectionFactory extends CollectionFactory<User> {
     ]
 
     if (searchText === undefined || searchText === '') {
-      delete (aggregateQuery[0] as any).$match.$text
+      delete aggregateQuery[0].$match.$text
     }
 
     return this.collection().aggregate(aggregateQuery)
