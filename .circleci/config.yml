@@ -32,7 +32,6 @@ jobs:
       - run: npm run lint
 
       # run tests and store test results
-      - run: npm run pretest
       - run:
           command: npm run test:ci
           environment:

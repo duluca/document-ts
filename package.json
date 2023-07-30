@@ -14,7 +14,6 @@
     "build:test": "tsc -p tests/tsconfig.test.json",
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",
-    "pretest": "npm run build && npm run build:test",
     "test": "jest",
     "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
     "standalone": "node tests/standalone",
