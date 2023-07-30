@@ -99,7 +99,7 @@ describe('Database', () => {
         actualException = ex
       }
 
-      expect(actualException).toEqual(expectedException)
+      expect(actualException.message).toEqual(expectedException.message)
     })
 
     test('should fail to connect with no cert', async () => {
