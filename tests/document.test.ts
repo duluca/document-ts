@@ -414,7 +414,11 @@ describe('Document', () => {
     expect(expectedSearchResults).toBe(results.total)
     expect(results.data).toHaveLength(expectedSearchResults)
     expect((results.data[0] as any).firstName).toBeUndefined()
-    expect(results.data[0].email).toBe('apple@smith.com')
+    expect(results.data.some((record) => record.email === 'apple@smith.com')).toBeTruthy()
+    expect(results.data.some((record) => record.email === 'efg@gmail.com')).toBeTruthy()
+    expect(
+      results.data.some((record) => record.email === 'jones.smith@icloud.com')
+    ).toBeTruthy()
   })
 
   test('should find with pagination using simple find', async () => {

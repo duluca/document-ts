@@ -71,7 +71,6 @@
   },
   "config": {
     "mongodbMemoryServer": {
-      "version": "5.7.0",
       "debug": "true"
     }
   }
