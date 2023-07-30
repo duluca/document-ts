@@ -69,7 +69,9 @@
   },
   "config": {
     "mongodbMemoryServer": {
-      "debug": "true"
+      "arch": "arm64",
+      "archive_name" : "http://downloads.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2004-latest.tgzhttp://downloads.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2004-v4.4-latest.tgz",
+      "debug": "1"
     }
   }
 }
