@@ -10,8 +10,8 @@ import process from 'process'
 
 import assert from 'node:assert'
 
-function cmd(...command) {
-  let p = spawn(command[0], command.slice(1))
+function cmd(...command: string[]) {
+  const p = spawn(command[0], command.slice(1))
   return new Promise((resolveFunc) => {
     p.stdout.on('data', (x) => {
       process.stdout.write(x.toString())
