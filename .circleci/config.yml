@@ -20,7 +20,7 @@ jobs:
             echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
             sudo apt update
             sudo apt install -y mongodb-org
-
+            MONGOMS_SYSTEM_BINARY=/usr/bin/mongosh
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
