@@ -11,7 +11,7 @@
     "lint:fix": "npm run lint -- --fix",
     "prebuild": "rimraf dist",
     "build": "tsc -p tsconfig.src.json",
-    "build:test": "tsc -p tsconfig.test.json",
+    "build:test": "tsc -p tests/tsconfig.test.json",
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",
     "test": "npm run build:test && jest",
