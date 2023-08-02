@@ -185,11 +185,9 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
 
-    const dynamicInput: any = '10'
-
     const results = await UserCollection.findWithPagination<User>({
-      skip: dynamicInput,
-      limit: dynamicInput,
+      skip: 10,
+      limit: 10,
     })
     expect(expectedRecordCount).toBe(results.total)
     expect(results.data).toHaveLength(10)
