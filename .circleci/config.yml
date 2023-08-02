@@ -4,7 +4,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: node:20
+      - image: node:20-buster
 
     working_directory: ~/repo
 
