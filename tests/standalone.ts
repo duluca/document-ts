@@ -57,7 +57,7 @@ async function testPagination() {
   const expectedRecordCount = 20
 
   try {
-    let user = new User()
+    let user: User
     for (let i = 0; i < expectedRecordCount; i++) {
       user = new User()
       await user.create(`${i}`, `${i}`, `${i}@gmail.com`, 'user')
