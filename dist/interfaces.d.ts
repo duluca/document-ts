@@ -1,19 +1,20 @@
-import { Collection, ObjectID } from 'mongodb';
+import { Collection, ObjectId, Sort, WithId } from 'mongodb';
 import { ISerializable } from './serializer';
-export interface IDbRecord {
-    _id: ObjectID;
+export interface IDbRecord extends WithId<object> {
+    _id: ObjectId;
 }
 export interface IDocument extends IDbRecord {
-    _id: ObjectID;
+    _id: ObjectId;
     collectionName: string;
 }
-export declare type ICollectionProvider<TDocument extends IDocument | ISerializable> = () => Collection<TDocument>;
-export declare type Func<TResult> = () => TResult;
+export type ICollectionProvider<TDocument extends IDocument | ISerializable> = () => Collection<TDocument>;
+export type Func<TResult> = () => TResult;
 export interface IQueryParameters {
     filter?: string;
     skip?: number;
     limit?: number;
-    sortKeyOrList?: string | object[] | object;
+    sortKeyOrList?: string | string[];
+    mongoSortOverride?: Sort;
     projectionKeyOrList?: string | object[] | object;
 }
 export interface IPaginationResult<TDocument extends IDocument | object> {
@@ -21,5 +22,5 @@ export interface IPaginationResult<TDocument extends IDocument | object> {
     total: number;
 }
 export interface IFilter {
-    [index: string]: any;
+    [index: string]: unknown;
 }

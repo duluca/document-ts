@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { jest, describe, expect, test, beforeEach, afterEach } from '@jest/globals'
+
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import { close, connect, connectionStatus, getDbInstance } from '../src/index'
 
 let mongoServerInstance: MongoMemoryServer
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
 describe('Database', () => {
   describe('disconnected', () => {
@@ -15,7 +18,7 @@ describe('Database', () => {
       }
     })
 
-    it('should throw exception given not instantiated', async () => {
+    test('should throw exception given not instantiated', async () => {
       const expectedException = new Error('Database is not yet instantiated')
       let actualException = null
 
@@ -28,7 +31,7 @@ describe('Database', () => {
       expect(actualException).toEqual(expectedException)
     })
 
-    it('should return connected status false when disconnected', async () => {
+    test('should return connected status false when disconnected', async () => {
       const expectedStatus = false
       let actualStatus = null
 
@@ -37,29 +40,27 @@ describe('Database', () => {
       expect(actualStatus).toEqual(expectedStatus)
     })
 
-    it('should retry when unable to connect', async () => {
+    test('should retry when unable to connect', async () => {
       let actualException = null
 
-      spyOn(console, 'log')
+      jest.spyOn(console, 'log')
 
       try {
-        await connect('asdfasdf', true, 0.01, 2, null, {
-          numberOfRetries: 0,
-          reconnectTries: 0,
-          reconnectInterval: 0,
-        })
+        await connect('asdfasdf', true, 0.01, 2, null, {})
       } catch (ex) {
         actualException = ex
       }
 
       expect(actualException).toBeDefined()
-      expect(console.log).toHaveBeenCalledTimes(4)
+      expect(console.log).toHaveBeenCalledTimes(5)
     })
   })
 
   describe('connected', () => {
-    beforeEach(() => {
-      mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
+    beforeEach(async () => {
+      mongoServerInstance = await MongoMemoryServer.create({
+        instance: { dbName: 'testDb' },
+      })
     })
 
     afterEach(async () => {
@@ -67,13 +68,13 @@ describe('Database', () => {
       await mongoServerInstance.stop()
     })
 
-    it('should connect', async () => {
+    test('should connect', async () => {
       const expectedException = null
       let actualException = null
       const expectedStatus = true
       let actualStatus = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
       try {
         await connect(uri)
         actualStatus = connectionStatus()
@@ -85,13 +86,13 @@ describe('Database', () => {
       expect(actualStatus).toEqual(expectedStatus)
     })
 
-    it('should fail to connect with no cert', async () => {
+    test('should fail to connect with invalid cert', async () => {
       const expectedException = new Error(
         "ENOENT: no such file or directory, open 'server/compose-ca.pem'"
       )
       let actualException = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
 
       try {
         await connect(uri, true, null, null, 'server/compose-ca.pem')
@@ -99,14 +100,14 @@ describe('Database', () => {
         actualException = ex
       }
 
-      expect(actualException).toEqual(expectedException)
+      expect(actualException.message).toEqual(expectedException.message)
     })
 
-    it('should fail to connect with no cert', async () => {
+    test('should fail to connect with no cert', async () => {
       const expectedException = null
       let actualException = null
 
-      const uri = await mongoServerInstance.getConnectionString()
+      const uri = mongoServerInstance.getUri()
 
       try {
         await connect(uri, false, null, null)

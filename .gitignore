@@ -36,6 +36,7 @@ jspm_packages
 # Optional REPL history
 .node_repl_history
 
+!.eclintrc.js
 *.js
 *.js.map
 declarations
@@ -43,3 +44,4 @@ declarations
 !specs.js
 test_results
 .env
+junit.xml

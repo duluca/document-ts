@@ -1,4 +1,6 @@
-'use strict'
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
@@ -6,12 +8,14 @@ import { close, connect } from '../src/index'
 import { User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
+// jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
 describe('Document', () => {
   beforeEach(async () => {
-    mongoServerInstance = new MongoMemoryServer({ instance: { dbName: 'testDb' } })
-    const uri = await mongoServerInstance.getConnectionString()
+    mongoServerInstance = await MongoMemoryServer.create({
+      instance: { dbName: 'testDb' },
+    })
+    const uri = mongoServerInstance.getUri()
     await connect(uri)
   })
 
@@ -20,7 +24,7 @@ describe('Document', () => {
     await mongoServerInstance.stop()
   })
 
-  it('should get an error when query is null with pagination', async () => {
+  test('should get an error when query is null with pagination', async () => {
     const expectedException = null
     let actualException = null
     const expectedRecordCount = 20
@@ -36,6 +40,6 @@ describe('Document', () => {
 
     expect(expectedException).toEqual(actualException)
 
-    await expectAsync(UserCollection.findWithPagination<User>(undefined)).toBeRejected()
+    await expect(UserCollection.findWithPagination<User>(undefined)).rejects.toBeTruthy()
   })
 })

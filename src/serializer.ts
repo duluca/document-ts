@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export interface ISerializable extends Object {
   toJSON(): object
   toBSON(): object
@@ -32,7 +38,7 @@ export function Serialize(
         serializationTarget[key] = []
         for (const cc of child) {
           if (typeof cc === 'object') {
-            serializationTarget[key].push(Serialize(strategy, cc))
+            serializationTarget[key].push(Serialize(strategy, cc as ISerializable))
           } else {
             serializationTarget[key].push(cc)
           }

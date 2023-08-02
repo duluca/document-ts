@@ -1,9 +1,7 @@
 {
   "debug.openExplorerOnEnd": true,
   "editor.tabSize": 2,
-  "editor.rulers": [
-    90
-  ],
+  "editor.rulers": [90],
   "editor.autoIndent": "full",
   "editor.cursorBlinking": "solid",
   "editor.formatOnType": false,
@@ -46,7 +44,11 @@
     "titleBar.inactiveForeground": "#e7e7e799",
     "statusBar.background": "#294e80",
     "statusBarItem.hoverBackground": "#3566a7",
-    "statusBar.foreground": "#e7e7e7"
+    "statusBar.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#3566a7",
+    "statusBarItem.remoteBackground": "#294e80",
+    "statusBarItem.remoteForeground": "#e7e7e7"
   },
   "peacock.color": "#294E80",
   "gitlens.menus": {
@@ -57,5 +59,14 @@
     "editor.defaultFormatter": "HookyQR.beautify"
   },
   "auto-close-tag.SublimeText3Mode": true,
-  "html.autoClosingTags": false
+  "html.autoClosingTags": false,
+  "[ignore]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

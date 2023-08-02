@@ -1,4 +1,4 @@
-import { AggregationCursor, Cursor, FilterQuery, FindOneAndReplaceOption, FindOneOptions, MongoCountPreferences, UpdateQuery } from 'mongodb';
+import { AggregationCursor, Filter, FindOptions, CountDocumentsOptions, UpdateFilter, FindCursor, Sort, SortDirection, FindOneAndUpdateOptions } from 'mongodb';
 import { Func, ICollectionProvider, IDbRecord, IDocument, IFilter, IPaginationResult, IQueryParameters } from './interfaces';
 import { ISerializable } from './serializer';
 export declare abstract class CollectionFactory<TDocument extends IDocument & ISerializable> {
@@ -9,22 +9,24 @@ export declare abstract class CollectionFactory<TDocument extends IDocument & IS
     sanitizeId(filter: IFilter): void;
     get collection(): ICollectionProvider<TDocument>;
     aggregate(pipeline: object[]): AggregationCursor<TDocument>;
-    findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions): Promise<TDocument | null>;
-    findOneAndUpdate(filter: FilterQuery<TDocument>, update: TDocument | UpdateQuery<TDocument>, options?: FindOneAndReplaceOption): Promise<TDocument | null>;
+    findOne(filter: Filter<TDocument>, options?: FindOptions): Promise<TDocument | null>;
+    findOneAndUpdate(filter: Filter<TDocument>, update: TDocument | UpdateFilter<TDocument>, options?: FindOneAndUpdateOptions): Promise<TDocument | null>;
     findWithPagination<TReturnType extends IDbRecord>(queryParams: Partial<IQueryParameters> & object, aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>, query?: string | object, searchableProperties?: string[], hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
     private buildCursor;
-    private cursorStrategy;
+    private findCursorStrategy;
     private aggregationCursorStrategy;
     getTotal(aggregationCursor?: AggregationCursor, builtQuery?: {}): Promise<number>;
-    getQuery(query: string | object | undefined, searchableProperties: string[]): {};
-    getCursor(builtQuery: {}, projection: {}): Cursor<TDocument>;
+    getQuery(query: string | object | undefined, searchableProperties: string[]): object;
+    getCursor<TReturnType>(builtQuery: object, projection: object): FindCursor<TReturnType>;
     fieldsArrayToObject(fields: string[]): object;
-    find<TReturnType extends IDbRecord>(query: FilterQuery<TDocument>, options?: FindOneOptions, skip?: number, limit?: number, hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
+    find<TReturnType extends IDbRecord>(query: Filter<TDocument>, options?: FindOptions, skip?: number, limit?: number, hydrate?: boolean, debugQuery?: boolean): Promise<IPaginationResult<TReturnType>>;
     hydrateObject(document: unknown): TDocument & ISerializable;
-    count(query: FilterQuery<TDocument>, options?: MongoCountPreferences): Promise<number>;
+    count(query: Filter<TDocument>, options?: CountDocumentsOptions): Promise<number>;
     private tokenize;
     buildTokenizedQueryObject(filter: string, searchableProperties: string[]): object;
+    sortKeyToSortTuple(key: string): [string, SortDirection];
+    sortKeyOrListToSort(sortKeyOrList: string | string[]): Sort;
     keyToObject(sortKey: string | object, negativeValue: number): object;
     keyOrListToObject(sortKeyOrList: string | object[] | object, negativeValue: number): object[];
-    buildQuery<TReturnType>(cursor: Cursor<TDocument> | AggregationCursor<TReturnType>, parameters?: IQueryParameters): Cursor<TDocument> | AggregationCursor<TReturnType>;
+    buildQuery<TReturnType>(cursor: FindCursor<TReturnType> | AggregationCursor<TReturnType>, parameters?: IQueryParameters): FindCursor<TReturnType> | AggregationCursor<TReturnType>;
 }
