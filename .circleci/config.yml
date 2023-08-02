@@ -42,7 +42,7 @@ jobs:
       - run: npm run style
       - run: npm run lint
 
-      - run: npm run standalone
+      # - run: npm run standalone
 
       # run tests and store test results
       - run:
