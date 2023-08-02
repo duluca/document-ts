@@ -4,23 +4,12 @@ orbs:
 jobs:
   build:
     docker:
-      - image: node:20-buster
+      - image: node:20-bullseye
 
     working_directory: ~/repo
 
     steps:
       - checkout
-      # - run:
-      #     name: Install libssl1.1
-      #     command: |
-      #       # wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-      #       # sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-      #       # sudo apt-get install curl libcurl4
-      #       wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc |  gpg --dearmor | sudo tee /usr/share/keyrings/mongodb.gpg > /dev/null
-      #       echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-      #       sudo apt update
-      #       sudo apt install -y mongodb-org
-      #       MONGOMS_SYSTEM_BINARY=/usr/bin/mongosh
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
@@ -28,7 +17,9 @@ jobs:
             - v1-dependencies-
 
       # check npm dependencies for security risks - run 'npm audit' to fix
-      - run: npx audit-ci -m --report-type full -w decompress
+      - run:
+          name: Security Check
+          command: npx audit-ci -m --report-type full -w decompress
 
       # install dependecies
       - run: npm ci
@@ -39,13 +30,15 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
 
       # ensure code style standards are adhered to - run 'npm run style:fix' to fix
-      - run: npm run style
-      - run: npm run lint
-
-      # - run: npm run standalone
+      - run:
+          name: Check for Code Style and Linting Issues
+          command: |
+            npm run style
+            npm run lint
 
       # run tests and store test results
       - run:
+          name: Run Tests and Check Code Coverage
           command: npm run test:ci
           environment:
             JEST_JUNIT_OUTPUT_DIR: ./test_results/
