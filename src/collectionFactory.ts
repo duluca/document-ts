@@ -237,7 +237,7 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
         limit,
         skip,
         mongoSortOverride: options?.sort,
-        projectionKeyOrList: options ? options.projection : [],
+        projectionKeyOrList: options?.projection || [],
       },
       undefined,
       query,

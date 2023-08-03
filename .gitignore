@@ -45,3 +45,4 @@ declarations
 test_results
 .env
 junit.xml
+!eslint.config.js

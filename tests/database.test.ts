@@ -14,7 +14,6 @@ describe('Database', () => {
       await close()
       if (mongoServerInstance) {
         await mongoServerInstance.stop()
-        mongoServerInstance = null
       }
     })
 
@@ -33,9 +32,8 @@ describe('Database', () => {
 
     test('should return connected status false when disconnected', async () => {
       const expectedStatus = false
-      let actualStatus = null
 
-      actualStatus = connectionStatus()
+      const actualStatus = connectionStatus()
 
       expect(actualStatus).toEqual(expectedStatus)
     })
@@ -46,7 +44,7 @@ describe('Database', () => {
       jest.spyOn(console, 'log')
 
       try {
-        await connect('asdfasdf', true, 0.01, 2, null, {})
+        await connect('asdfasdf', true, 0.01, 2, undefined, {})
       } catch (ex) {
         actualException = ex
       }
@@ -72,7 +70,7 @@ describe('Database', () => {
       const expectedException = null
       let actualException = null
       const expectedStatus = true
-      let actualStatus = null
+      let actualStatus = false
 
       const uri = mongoServerInstance.getUri()
       try {
@@ -90,17 +88,17 @@ describe('Database', () => {
       const expectedException = new Error(
         "ENOENT: no such file or directory, open 'server/compose-ca.pem'"
       )
-      let actualException = null
+      let actualException = new Error()
 
       const uri = mongoServerInstance.getUri()
 
       try {
-        await connect(uri, true, null, null, 'server/compose-ca.pem')
+        await connect(uri, true, undefined, undefined, 'server/compose-ca.pem')
       } catch (ex) {
         actualException = ex
       }
 
-      expect(actualException.message).toEqual(expectedException.message)
+      expect(actualException?.message).toEqual(expectedException.message)
     })
 
     test('should fail to connect with no cert', async () => {
@@ -110,7 +108,7 @@ describe('Database', () => {
       const uri = mongoServerInstance.getUri()
 
       try {
-        await connect(uri, false, null, null)
+        await connect(uri, false, undefined, undefined)
       } catch (ex) {
         actualException = ex
       }

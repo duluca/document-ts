@@ -18,10 +18,10 @@ export type Func<TResult> = () => TResult
 
 export interface IQueryParameters {
   filter?: string
-  skip?: number
-  limit?: number
+  skip?: number | undefined
+  limit?: number | undefined
   sortKeyOrList?: string | string[]
-  mongoSortOverride?: Sort
+  mongoSortOverride?: Sort | undefined
   projectionKeyOrList?: string | object[] | object
 }
 
