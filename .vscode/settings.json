@@ -27,7 +27,6 @@
   },
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
-  "npm.enableScriptExplorer": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "workbench.iconTheme": "material-icon-theme",
   "workbench.colorCustomizations": {
@@ -55,9 +54,6 @@
     "editorGroup": false
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[html]": {
-    "editor.defaultFormatter": "HookyQR.beautify"
-  },
   "auto-close-tag.SublimeText3Mode": true,
   "html.autoClosingTags": false,
   "[ignore]": {
