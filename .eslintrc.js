@@ -16,7 +16,6 @@ module.exports = {
   env: {
     node: true,
     mongo: true,
-    jasmine: true,
   },
   rules: {
     '@typescript-eslint/no-misused-promises': 'off',
