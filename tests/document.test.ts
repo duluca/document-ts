@@ -10,7 +10,6 @@ import { close, connect } from '../src/index'
 import { IUser, User, UserCollection } from './user'
 
 let mongoServerInstance: MongoMemoryServer
-// jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
 describe('Document', () => {
   beforeEach(async () => {
