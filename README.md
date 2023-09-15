@@ -7,33 +7,35 @@
 [![npm](https://img.shields.io/npm/v/document-ts)](https://www.npmjs.com/package/document-ts)
 [![npm](https://img.shields.io/npm/dt/document-ts)](https://www.npmjs.com/package/document-ts)
 
-A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Document Mapper) convenience features
+A lightweight TypeScript MongoDB ODM with standout convenience features like `CollectionFactory` and `findWithPagination`
 
 > Check out the sample full-stack project [Lemon Mart Server](https://github.com/duluca/lemon-mart-server)
 
-> Check out my book _Angular 6 for Enterprise-Ready Web Applications_. Get it on http://AngularForEnterprise.com.
+> Get the book _Angular for Enterprise-Ready Web Applications_ on https://AngularForEnterprise.com.
 
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
 ## Major Features
 
+DocumentTS is an ODM (Object Document Mapper) for MongoDB. 
+
 - connect()`
 
   _MongoDB async connection harness_
   
-  It can be a challenge to ensure that database connectivity exists, when writing an fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultanously from multiple threads starting up at the same time.
+  It can be a challenge to ensure that database connectivity exists, when writing a fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultaneously from multiple threads starting up simultaneously.
 - `Document` and `IDocument`
 
   _Base Class and Interface to help define your own models_
 - `CollectionFactory`
 
-  _Define collections, organize indexes and aggregate queries alongside collection implementation. Below are the convenience features of a DocumentTS collection_
-    -  `get collection` returns the navtive MongoDB collection, so you can directly operate on it
+  _Define collections, organize indexes, and aggregate queries alongside collection implementation. Below are the convenience features of a DocumentTS collection_
+    -  `get collection` returns the native MongoDB collection, so you can directly operate on it
     
     ```js
     get collection(): ICollectionProvider<TDocument>
     ```
-    - `aggregate` allows you run a MongoDB aggregation pipeline
+    - `aggregate` allows you to run a MongoDB aggregation pipeline
     
     ```js
     aggregate(pipeline: object[]): AggregationCursor<TDocument>
@@ -48,7 +50,7 @@ A very thin TypeScript-based MongoDB helper with optional, rich ODM (Object Docu
       options?: FindOneAndReplaceOption
      ): Promise<TDocument | null>
      ```
-     - `findWithPagination` is by far the best feature of DocumentTS, allowing you filter, sort, and paginate large collections of data. This function is geared towards use with data tables, so you specifies searchable properties, turn off hydration, and use a debug feature to fine tune your queries.
+     - `findWithPagination` is by far the best feature of DocumentTS, allowing you to filter, sort, and paginate large collections of data. This function is geared towards use with data tables, so you specify searchable properties, turn off hydration, and use a debug feature to fine-tune your queries.
      
     ```js
     async findWithPagination<TReturnType extends IDbRecord>(
@@ -82,7 +84,7 @@ async function start() {
 start()
 ```
 
-- If you use `connect()` then you don't have to worry about having your Database Instance initialized during an asynchoronous start up sequence. `getDbInstance` gives you access to the native MongoDB driver to perform custom functions like creating indexes.
+- If you use `connect()` then you don't have to worry about having your Database Instance initialized during an asynchronous start-up sequence. `getDbInstance` gives you access to the native MongoDB driver to perform custom functions like creating indexes.
 
 ```js
 import { getDbInstance } from 'document-ts'
@@ -156,7 +158,7 @@ export class User extends Document<IUser> implements IUser {
   }
 ```
 
-- Implement the `CollectionFactory` class, so that you can run Mongo queries without having to call `getDbInstance` or specify the collection and TypeScript type name every time you run a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination` and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
+- Implement the `CollectionFactory` class, so that you can run Mongo queries without having to call `getDbInstance` or specify the collection and TypeScript type name every time you run a query. CollectionFactory provides convenience functions like `find`, `findOne`, `findOneAndUpdate`, `findWithPagination`, and similar, while also handling `hydration` tasks, such as serializing getters and child documents.
 
 ```js
 import { CollectionFactory } from 'document-ts'
@@ -170,7 +172,7 @@ class UserCollectionFactory extends CollectionFactory<User> {
 export let UserCollection = new UserCollectionFactory(User)
 ```
 
-- `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advance join-like queries, geo queries and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with easse.
+- `CollectionFactory` is powerful and flexible. In your custom class, you can implement MongoDB aggregate queries to run advanced join-like queries, geo queries, and whatever MongoDB supports. `findWithPagination` itself is very powerful and will enable you to implement paginated dashboards with ease.
 
 - `findWithPagination` leverage query parameters for pagination and configuration
 
@@ -222,19 +224,19 @@ See the Lemon Mart Server sample project for usage - https://github.com/duluca/l
 - Reliable
   - Rely on the rock-solid Native Node.js MongoDB drivers
   - Don't inject custom code into DB calls without explicit intent by the developer
-  - Don't hide new MongoDB features, so you don't have to wait DocumentTS to be updated before you can use them
+  - Don't hide new MongoDB features, so you don't have to wait for DocumentTS to be updated before you can use them
 - Optional
   - Stays out of the way, so developers can slowly transition
   - If performance becomes a concern easily switch to native MongoDB calls for the best performance
 - Async
-  - Ensure developers can write simpler and more reliable code by surfaceing promises and async/await features
-- Convienient
+  - Ensure developers can write simpler and more reliable code by surfacing promises and async/await features
+- Convenient
   - Developers define their own models through simple Interfaces
   - Choose fields that you want to automatically hydrate, such as child or related objects
   - Serialize calculated fields with every request
-  - Protect certain fields (like passwords) from serialization, so they aren't accidently sent across the wire
+  - Protect certain fields (like passwords) from serialization, so they aren't accidentally sent across the wire
 - Promote Good Patterns
-  - Suggest/enable easy to understand and implement patters for developers, so their code can scale and remain organized
+  - Suggest/enable easy to understand and implement patterns for developers, so their code can scale and remain organized
 - Prevent Bloat
   - Leverage TypeScript types, interfaces, generics and inheritance to achieve development-time certainty of proper database access
   - Keep the code smart, readable and lean
@@ -242,7 +244,7 @@ See the Lemon Mart Server sample project for usage - https://github.com/duluca/l
 
 ## What It Isn't
 
-Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can developer directly against MongoDB while enjoying some conveniences as you choose.
+Not a full-fledged ODM or ORM replacement and doesn't aspire to be one like Mongoose or Camo. Databases are HARD. MongoDB took many years to mature, and Microsoft has been trying for a really long time to build a reliable ORM with Entity Framework, Mongoose and many other ODMs are ridden with bugs (no offense) when you push them beyond the basics. It takes great resources to deliver a solid data access experience, so with DocumentTS you can develop directly against MongoDB while enjoying some conveniences as you choose.
 
 ## Inspirations
 
@@ -255,7 +257,3 @@ Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definite
 
 - Run `npm install`
 - Run `npm test`
-
-### Maintainers
-
-- **[Kenton Bocock](https://github.com/kentonbmax)**
