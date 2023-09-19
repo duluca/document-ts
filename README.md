@@ -9,9 +9,7 @@
 
 A lightweight TypeScript MongoDB ODM with standout convenience features like `CollectionFactory` and `findWithPagination`
 
-> Check out the sample full-stack project [Lemon Mart Server](https://github.com/duluca/lemon-mart-server)
-
-> Get the book _Angular for Enterprise-Ready Web Applications_ on https://AngularForEnterprise.com.
+> Read the excerpt from [Angular for Enterprise](https://AngularForEnterprise.com) on Understanding DocumentTS on the [Wiki](https://github.com/duluca/document-ts/wiki/Understanding-DocumentTS).
 
 > Looking to containerize MongoDB? Checkout [excellalabs/mongo](https://github.com/excellalabs/mongo-docker) for a fully featured Mongo container (with Auth & SSL) inherited from the official Mongo Docker image and instructions on [how to deploy it on AWS](https://gist.github.com/duluca/ebcf98923f733a1fdb6682f111b1a832#file-awc-ecs-access-to-aws-efs-md).
 
@@ -19,7 +17,7 @@ A lightweight TypeScript MongoDB ODM with standout convenience features like `Co
 
 DocumentTS is an ODM (Object Document Mapper) for MongoDB. 
 
-- connect()`
+- `connect()`
 
   _MongoDB async connection harness_
   
