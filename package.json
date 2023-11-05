@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/duluca/DocumentTS#readme",
   "peerDependencies": {
-    "mongodb": "^5"
+    "mongodb": "^6"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
