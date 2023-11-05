@@ -1,6 +1,6 @@
 {
   "name": "document-ts",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "A very thin TypeScript-based async MongoDB helper with optional ODM convenience features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/duluca/DocumentTS#readme",
   "peerDependencies": {
-    "mongodb": "^5"
+    "mongodb": "^6"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
