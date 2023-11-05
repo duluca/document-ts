@@ -20,6 +20,8 @@ export async function connect(
   if (certFileUri) {
     const certFileBuf = [readFileSync(certFileUri)]
 
+    //TODO: Replace ssl prefixed options with tls and store certs in SecureContext
+    // https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/tls/#std-label-node-connect-tls
     mongoOptions = Object.assign(mongoOptions, {
       ssl: true,
       sslValidate: true,
