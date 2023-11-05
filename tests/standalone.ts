@@ -44,7 +44,14 @@ async function setup() {
   return
 }
 
+async function teardown() {
+  console.log('Tearing down test db...')
+  await cmd('docker', 'rm', '-f', 'minimal-mongo')
+  return
+}
+
 async function testFindOne() {
+  console.log('Testing findOne...')
   const user = new User()
   await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
   const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
@@ -53,7 +60,34 @@ async function testFindOne() {
   await user.delete()
 }
 
+async function testFindOneAndUpdate() {
+  console.log('Testing findOneAndUpdate...')
+  const expectedFirstName = 'Master'
+
+  const user = new User()
+  await user.create('Doguhan', 'Uluca', 'duluca@gmail.com', 'user')
+
+  const updatedUser = await UserCollection.findOneAndUpdate(
+    { lastName: 'Uluca' },
+    {
+      $set: {
+        firstName: 'Master',
+      },
+    },
+    { returnDocument: 'after' }
+  )
+
+  const foundUser = await UserCollection.findOne({ lastName: 'Uluca' })
+
+  console.log(`(Name) Expected: ${expectedFirstName}, Actual: ${updatedUser.firstName}`)
+  assert.strictEqual(updatedUser.firstName, expectedFirstName)
+  console.log(`(Name) Expected: ${expectedFirstName}, Actual: ${foundUser.firstName}`)
+  assert.strictEqual(foundUser.firstName, expectedFirstName)
+  await user.delete()
+}
+
 async function testPagination() {
+  console.log('Testing pagination...')
   const expectedRecordCount = 20
 
   try {
@@ -80,6 +114,7 @@ async function testPagination() {
 }
 
 async function testSearch() {
+  console.log('Testing search...')
   let user: User
   try {
     user = new User()
@@ -115,6 +150,11 @@ async function testSearch() {
   assert.strictEqual(results.total, 1)
 }
 
+async function clearAllUsers() {
+  const count = await UserCollection.collection().deleteMany()
+  console.log(`Deleted ${count.deletedCount} users.`)
+}
+
 async function runTests() {
   await connect('mongodb://john.smith:g00fy@localhost:27017/acme')
   console.log('Connected to db.')
@@ -122,7 +162,9 @@ async function runTests() {
 
   await UserCollection.createIndexes()
 
+  await clearAllUsers()
   await testFindOne()
+  await testFindOneAndUpdate()
   await testPagination()
   await testSearch()
 
@@ -132,6 +174,7 @@ async function runTests() {
 async function start() {
   await setup()
   await runTests()
+  await teardown()
   process.exit(0)
 }
 

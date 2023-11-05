@@ -70,7 +70,7 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     const document = options
       ? await this.collection().findOneAndUpdate(filter, update, options)
       : await this.collection().findOneAndUpdate(filter, update)
-    return document.value ? this.hydrateObject(document.value) : null
+    return document ? this.hydrateObject(document) : null
   }
 
   async findWithPagination<TReturnType extends IDbRecord>(
