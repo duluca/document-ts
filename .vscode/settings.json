@@ -9,8 +9,8 @@
   "editor.formatOnSave": true,
   "editor.minimap.enabled": false,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": false,
-    "source.fixAll.tslint": true
+    "source.organizeImports": "never",
+    "source.fixAll.tslint": "explicit"
   },
   "explorer.openEditors.visible": 0,
   "files.trimTrailingWhitespace": true,
