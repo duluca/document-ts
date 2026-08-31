@@ -1,0 +1,45 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "audit-policy-fixture": {
+      "name": "audit-policy-fixture",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 999999,
+          "name": "audit-policy-fixture",
+          "dependency": "audit-policy-fixture",
+          "title": "High-severity policy fixture",
+          "url": "https://github.com/advisories/GHSA-aaaa-bbbb-cccc",
+          "severity": "high",
+          "cwe": [],
+          "cvss": { "score": 8, "vectorString": null },
+          "range": "*"
+        }
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": ["node_modules/audit-policy-fixture"],
+      "fixAvailable": false
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 1,
+      "critical": 0,
+      "total": 1
+    },
+    "dependencies": {
+      "prod": 1,
+      "dev": 1,
+      "optional": 0,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 2
+    }
+  }
+}

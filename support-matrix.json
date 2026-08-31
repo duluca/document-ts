@@ -1,0 +1,45 @@
+{
+  "$schema": "./support-matrix.schema.json",
+  "primary": "node22-mongodb6-server7",
+  "packageContract": {
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "mongodbDriver": "^6.21.0"
+  },
+  "sources": {
+    "nodeLifecycle": "https://github.com/nodejs/Release#release-schedule",
+    "nodeSchedule": "https://raw.githubusercontent.com/nodejs/Release/main/schedule.json",
+    "nodeArchive": "https://nodejs.org/en/download/archive/v22.23.2",
+    "nodeReleaseIndex": "https://nodejs.org/dist/index.json",
+    "checkoutActionMetadata": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/action.yml",
+    "checkoutActionRelease": "https://github.com/actions/checkout/releases/tag/v7.0.1",
+    "mongodbCompatibility": "https://www.mongodb.com/docs/drivers/node/current/reference/compatibility/",
+    "mongodbDriverDocs": "https://www.mongodb.com/docs/drivers/node/v6.x/get-started/",
+    "mongodbLifecycle": "https://www.mongodb.com/legal/support-policy/lifecycles"
+  },
+  "githubActions": {
+    "checkout": {
+      "release": "v7.0.1",
+      "revision": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "runtime": "node24",
+      "runtimeLine": "24",
+      "runtimeEol": "2028-04-30"
+    }
+  },
+  "tuples": [
+    {
+      "id": "node22-mongodb6-server7",
+      "node": "22.23.2",
+      "npm": "10.9.8",
+      "mongodbDriver": "6.21.0",
+      "mongodbServer": "7.0.40",
+      "nodeStatus": "Maintenance LTS",
+      "nodeLine": "22",
+      "nodeEol": "2027-04-30",
+      "mongodbServerEol": "2027-08-31",
+      "mongodbDriverLine": "6",
+      "nodeImage": "node:22.23.2-bookworm@sha256:8a34c4ab3ea2c5cd194f07e317b2a8f09461d3c8b05c4e34c8ccd56d56024c4d",
+      "mongodbImage": "mongo:7.0.40@sha256:b6421fd6d1c5ded6377b397d8983e2f82e2100dc5123332dcfda2065a472be5b"
+    }
+  ]
+}

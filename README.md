@@ -1,8 +1,7 @@
 <img src="https://user-images.githubusercontent.com/822159/76696101-03818400-665e-11ea-9f31-5464c274d08c.png" alt="Minimal MEAN" width="250"/>
 
-[![CircleCI](https://circleci.com/gh/duluca/document-ts.svg?style=svg)](https://circleci.com/gh/duluca/document-ts)
+[![CI](https://github.com/duluca/document-ts/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/duluca/document-ts/actions/workflows/ci.yml)
 [![DeepScan grade](https://deepscan.io/api/teams/1906/projects/8210/branches/94244/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=1906&pid=8210&bid=94244)
-[![Coverage Status](https://coveralls.io/repos/github/duluca/document-ts/badge.svg?branch=master)](https://coveralls.io/github/duluca/document-ts?branch=master)
 
 [![npm](https://img.shields.io/npm/v/document-ts)](https://www.npmjs.com/package/document-ts)
 [![npm](https://img.shields.io/npm/dt/document-ts)](https://www.npmjs.com/package/document-ts)
@@ -61,9 +60,25 @@ DocumentTS is an ODM (Object Document Mapper) for MongoDB.
     ): Promise<IPaginationResult<TReturnType>>
     ```
       
+<!-- support-matrix:start -->
+## Supported Toolchain
+
+This table is generated from `support-matrix.json`. The checked-in matrix is the source of truth for supported and continuously tested combinations.
+
+| Node.js | npm | MongoDB driver | MongoDB server | Node status |
+| --- | --- | --- | --- | --- |
+| 22.23.2 | 10.9.8 | 6.21.0 | 7.0.40 | Maintenance LTS |
+
+Package ranges: Node.js `22.23.2`; npm `10.9.8`; MongoDB driver `^6.21.0`.
+
+Compatibility is reviewed against the [Node.js release schedule](https://github.com/nodejs/Release#release-schedule), [Node.js archive](https://nodejs.org/en/download/archive/v22.23.2), [MongoDB driver compatibility table](https://www.mongodb.com/docs/drivers/node/current/reference/compatibility/), and [MongoDB lifecycle schedule](https://www.mongodb.com/legal/support-policy/lifecycles).
+
+GitHub workflows pin [actions/checkout v7.0.1](https://github.com/actions/checkout/releases/tag/v7.0.1) by full commit SHA. Its declared node24 runtime is verified from the pinned action metadata and tracked against the Node.js lifecycle schedule.
+<!-- support-matrix:end -->
+
 ## Quick Start
 
-> Supports MongoDB v4+, Mongo Driver 3.3+ and TypeScript 3.7+
+> The generated support table above is the authoritative compatibility contract.
 
 - Add DocumentTS to your project with `npm install document-ts mongodb`
 - Connect to your Mongo database using `connect()`
@@ -253,5 +268,16 @@ Although DocumentTS doesn't aspire to replace Mongoose or Camo, it most definite
 
 ## Building This Project
 
-- Run `npm install`
-- Run `npm test`
+Integration tests use the same immutable MongoDB image in local development and CI. The image must be pulled once before an offline test run; the test suite never downloads a MongoDB executable through npm.
+
+```sh
+npm ci
+npm run verify:test-image
+npm run verify:test-image:negative
+docker compose -f compose.test.yml pull
+npm run test:mongodb:start
+npm test
+npm run test:mongodb:stop
+```
+
+The verifier and its negative configuration tests intentionally run before Compose starts. Set `MONGO_URI` to use an already-provisioned MongoDB 7.0 test service instead. GitHub Actions enforces the same digest-pinned images, dependency audit, coverage thresholds, and reviewable package evidence. The separate no-egress workflow preloads dependencies and both reviewed images, then runs the suite on an internal-only Docker network with `--pull never`.

@@ -1,0 +1,16 @@
+{
+  "primary": "only-tested-tuple",
+  "packageContract": {
+    "node": ">=22",
+    "npm": "10.9.8",
+    "mongodbDriver": "^6.21.0"
+  },
+  "tuples": [
+    {
+      "id": "only-tested-tuple",
+      "node": "22.23.2",
+      "npm": "10.9.8",
+      "mongodbDriver": "6.21.0"
+    }
+  ]
+}

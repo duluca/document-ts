@@ -21,6 +21,8 @@ module.exports = {
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/restrict-template-expressions': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
+    '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    '@typescript-eslint/no-wrapper-object-types': 'off',
     '@typescript-eslint/require-await': 'off',
     '@typescript-eslint/unbound-method': [
       'error',

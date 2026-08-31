@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  policy:
+    name: CI policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: node:22.23.2-bookworm@sha256:8a34c4ab3ea2c5cd194f07e317b2a8f09461d3c8b05c4e34c8ccd56d56024c4d
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the exact toolchain
+        run: |
+          test "$(node --version)" = "v22.23.2"
+          test "$(npm --version)" = "10.9.8"
+      - name: Install locked policy dependencies without a cache
+        run: npm ci --ignore-scripts
+      - name: Enforce dependency, image, and support policy
+        run: |
+          npm run audit:ci
+          npm run audit:policy:test
+          npm run verify:test-image
+          npm run verify:test-image:negative
+          npm run verify:no-download-guard
+          npm run support:check
+          npm run support:policy:test
+
+  build:
+    name: Build, test, coverage, and package
+    needs: policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: node:22.23.2-bookworm@sha256:8a34c4ab3ea2c5cd194f07e317b2a8f09461d3c8b05c4e34c8ccd56d56024c4d
+    services:
+      mongodb:
+        image: mongo:7.0.40@sha256:b6421fd6d1c5ded6377b397d8983e2f82e2100dc5123332dcfda2065a472be5b
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      MONGO_URI: mongodb://mongodb:27017
+      DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG: /tmp/mongodb-download-attempts.log
+      JEST_JUNIT_OUTPUT_DIR: ./test_results/
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the exact toolchain
+        run: |
+          test "$(node --version)" = "v22.23.2"
+          test "$(npm --version)" = "10.9.8"
+      - name: Install locked dependencies without a cache
+        run: npm ci --ignore-scripts
+      - name: Run the complete build and test gate
+        run: |
+          rm -f "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG"
+          export NODE_OPTIONS="--require=$GITHUB_WORKSPACE/scripts/no-mongodb-download-network-guard.cjs"
+          npm run audit:ci
+          npm run style
+          npm run lint
+          npm run build
+          npm run test:ci
+          test ! -s "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG"
+      - name: Build reviewable package evidence
+        run: |
+          package_evidence="$RUNNER_TEMP/ci-package"
+          mkdir -p "$package_evidence"
+          npm pack --pack-destination "$package_evidence"
+          npm pack --dry-run --json > "$package_evidence/package-dry-run.json"
+      - name: Retain coverage and test evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-coverage-${{ github.run_id }}
+          path: |
+            coverage/lcov.info
+            test_results/junit.xml
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain package evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-package-${{ github.run_id }}
+          path: ${{ runner.temp }}/ci-package/
+          if-no-files-found: error
+          retention-days: 14

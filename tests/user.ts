@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcryptjs'
+import { randomUUID } from 'node:crypto'
 import { AggregationCursor, ObjectId } from 'mongodb'
-import { v4 as uuid } from 'uuid'
 
 import { CollectionFactory, Document, IDocument } from '../src/index'
 import { Color, IColor } from './color'
@@ -61,7 +61,7 @@ export class User extends Document<IUser> implements IUser {
     this.role = role
 
     if (!password) {
-      password = uuid()
+      password = randomUUID()
     }
 
     this.password = await this.setPassword(password)
