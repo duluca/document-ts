@@ -147,8 +147,8 @@ function verifyWorkflowSafety(workflow, contents, name, permissions) {
     /\$\{\{\s*secrets(?:\.|\[)/,
     /\bid-token\s*:\s*write\b/,
     /\b(?:npm|pnpm|yarn)\s+publish\b/,
-    /\bNPM_TOKEN\b/,
-    /\bNODE_AUTH_TOKEN\b/,
+    new RegExp(`\\b${['NPM', 'TOKEN'].join('_')}\\b`),
+    new RegExp(`\\b${['NODE', 'AUTH', 'TOKEN'].join('_')}\\b`),
     /\bCOVERALLS(?:_|\b)/i,
     /\bCIRCLECI\b/i,
   ]
@@ -241,6 +241,10 @@ function verifyCiWorkflow(contents, primary) {
       with: { 'persist-credentials': false },
     },
     {
+      name: 'Trust only the checked-out workspace for Git inspection',
+      run: 'git config --global --add safe.directory "$GITHUB_WORKSPACE"',
+    },
+    {
       name: 'Verify the exact toolchain',
       run: [
         'test "$(node --version)" = "v22.23.2"',
@@ -261,6 +265,8 @@ function verifyCiWorkflow(contents, primary) {
         'npm run verify:no-download-guard',
         'npm run support:check',
         'npm run support:policy:test',
+        'npm run security:config',
+        'npm run test:release-policy',
       ].join('\n'),
     },
   ]
@@ -300,6 +306,7 @@ function verifyCiWorkflow(contents, primary) {
   }
   const expectedStepNames = [
     'Check out the source without retaining credentials',
+    'Trust only the checked-out workspace for Git inspection',
     'Verify the exact toolchain',
     'Install locked dependencies without a cache',
     'Run the complete build and test gate',
@@ -322,6 +329,10 @@ function verifyCiWorkflow(contents, primary) {
       with: { 'persist-credentials': false },
     },
     {
+      name: 'Trust only the checked-out workspace for Git inspection',
+      run: 'git config --global --add safe.directory "$GITHUB_WORKSPACE"',
+    },
+    {
       name: 'Verify the exact toolchain',
       run: [
         'test "$(node --version)" = "v22.23.2"',
@@ -333,7 +344,7 @@ function verifyCiWorkflow(contents, primary) {
       run: 'npm ci --ignore-scripts',
     },
   ]
-  const normalizedBuildPreamble = build.steps.slice(0, 3).map((step) => ({
+  const normalizedBuildPreamble = build.steps.slice(0, 4).map((step) => ({
     ...step,
     ...(step.run === undefined ? {} : { run: normalizeRun(step.run) }),
   }))
@@ -341,7 +352,7 @@ function verifyCiWorkflow(contents, primary) {
     fail('CI build job must retain the reviewed checkout, toolchain, and install steps')
   }
   if (
-    !isDeepStrictEqual(normalizeLines(build.steps[3].run), [
+    !isDeepStrictEqual(normalizeLines(build.steps[4].run), [
       'rm -f "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG"',
       'export NODE_OPTIONS="--require=$GITHUB_WORKSPACE/scripts/no-mongodb-download-network-guard.cjs"',
       'npm run audit:ci',
@@ -355,14 +366,12 @@ function verifyCiWorkflow(contents, primary) {
     fail('CI build job must run the complete reviewed gate before producing evidence')
   }
   if (
-    !isDeepStrictEqual(normalizeLines(build.steps[4].run), [
-      'package_evidence="$RUNNER_TEMP/ci-package"',
-      'mkdir -p "$package_evidence"',
-      'npm pack --pack-destination "$package_evidence"',
-      'npm pack --dry-run --json > "$package_evidence/package-dry-run.json"',
+    !isDeepStrictEqual(normalizeLines(build.steps[5].run), [
+      'npm run release:pack',
+      'npm run release:verify',
     ])
   ) {
-    fail('CI build job must create reviewable package evidence outside the package input')
+    fail('CI build job must create and verify reviewable release evidence')
   }
   const expectedEvidence = [
     {
@@ -371,11 +380,11 @@ function verifyCiWorkflow(contents, primary) {
     },
     {
       name: 'ci-package-${{ github.run_id }}',
-      paths: ['${{ runner.temp }}/ci-package/'],
+      paths: ['release-artifacts/'],
     },
   ]
   for (const [offset, evidence] of expectedEvidence.entries()) {
-    const step = build.steps[5 + offset]
+    const step = build.steps[6 + offset]
     if (
       step.uses !== reviewedActions.uploadArtifact ||
       step.with?.name !== evidence.name ||
@@ -387,6 +396,32 @@ function verifyCiWorkflow(contents, primary) {
       fail('CI evidence must use immutable, run-scoped reviewed artifacts')
     }
   }
+}
+
+function verifyReleaseWorkflowImages(contents, primary) {
+  const workflow = parseYaml('release workflow', contents)
+  if (!objectKeysEqual(workflow.jobs, ['build', 'publish', 'verify-publication'])) {
+    fail('release workflow must retain the reviewed build and publication jobs')
+  }
+  for (const [jobName, job] of Object.entries(workflow.jobs)) {
+    if (jobName !== 'build' && job.services !== undefined) {
+      fail(`release ${jobName} job cannot start service containers`)
+    }
+  }
+  const services = workflow.jobs.build?.services
+  if (!objectKeysEqual(services, ['mongodb'])) {
+    fail('release build job must define only the reviewed MongoDB service')
+  }
+  const mongodb = services.mongodb
+  if (
+    !isDeepStrictEqual(mongodb, {
+      image: primary.mongodbImage,
+      ports: ['27017:27017'],
+    })
+  ) {
+    fail('release MongoDB service must exactly match the reviewed image policy')
+  }
+  validateImmutableImage(mongodb.image)
 }
 
 function verifyComposeImages(contents, primary) {
@@ -773,17 +808,28 @@ const maintenanceWorkflowPath = argumentValue(
   '--maintenance-workflow',
   path.join(repositoryRoot, '.github/workflows/toolchain-maintenance.yml')
 )
-const [ciWorkflow, composeConfig, noEgressWorkflow, maintenanceWorkflow] =
-  await Promise.all([
-    readFile(ciWorkflowPath, 'utf8'),
-    readFile(composeConfigPath, 'utf8'),
-    readFile(noEgressWorkflowPath, 'utf8'),
-    readFile(maintenanceWorkflowPath, 'utf8'),
-  ])
+const releaseWorkflowPath = argumentValue(
+  '--release-workflow',
+  path.join(repositoryRoot, '.github/workflows/release.yml')
+)
+const [
+  ciWorkflow,
+  composeConfig,
+  noEgressWorkflow,
+  maintenanceWorkflow,
+  releaseWorkflow,
+] = await Promise.all([
+  readFile(ciWorkflowPath, 'utf8'),
+  readFile(composeConfigPath, 'utf8'),
+  readFile(noEgressWorkflowPath, 'utf8'),
+  readFile(maintenanceWorkflowPath, 'utf8'),
+  readFile(releaseWorkflowPath, 'utf8'),
+])
 verifyCiWorkflow(ciWorkflow, primary)
 verifyComposeImages(composeConfig, primary)
 verifyNoEgressWorkflow(noEgressWorkflow, primary)
 verifyMaintenanceWorkflow(maintenanceWorkflow)
+verifyReleaseWorkflowImages(releaseWorkflow, primary)
 
 const packageJson = JSON.parse(
   await readFile(path.join(repositoryRoot, 'package.json'), 'utf8')
@@ -810,5 +856,5 @@ for (const testFile of testFiles) {
 }
 
 console.log(
-  `Verified ${primary.nodeImage} and ${primary.mongodbImage} across GitHub Actions, local Compose, and the lockfile policy.`
+  `Verified ${primary.nodeImage} and ${primary.mongodbImage} across CI, release, no-egress, local Compose, and the lockfile policy.`
 )

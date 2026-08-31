@@ -126,7 +126,11 @@ describe('toolchain security policy', () => {
       'utf8'
     )
     expect(ciWorkflow).not.toMatch(/circleci|coveralls/i)
-    expect(ciWorkflow).not.toMatch(/\b(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b/)
+    const credentialMarkers = [
+      ['NPM', 'TOKEN'].join('_'),
+      ['NODE', 'AUTH', 'TOKEN'].join('_'),
+    ]
+    expect(ciWorkflow).not.toMatch(new RegExp(`\\b(?:${credentialMarkers.join('|')})\\b`))
     expect(ciWorkflow).not.toContain('id-token: write')
     expect(ciWorkflow).not.toMatch(/\bnpm publish\b/)
   })

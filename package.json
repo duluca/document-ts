@@ -9,6 +9,11 @@
     "npm": "10.9.8"
   },
   "packageManager": "npm@10.9.8",
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.js.map"
+  ],
   "scripts": {
     "style": "prettier --check \"{src,tests}/**/*.ts\"",
     "style:fix": "npm run style -- --write",
@@ -31,6 +36,12 @@
     "pretest": "npm run verify:test-image && npm run verify:test-image:negative && npm run verify:no-download-guard && npm run support:check && npm run support:policy:test",
     "prepublishOnly": "npm run test",
     "prepare": "npm run build",
+    "release:pack": "node scripts/release-artifact.mjs pack",
+    "release:verify": "node scripts/release-artifact.mjs verify-bundle",
+    "release:verify-context": "node scripts/verify-release-context.mjs",
+    "release:verify-registry": "node scripts/release-artifact.mjs verify-registry",
+    "security:config": "node scripts/verify-security-config.mjs",
+    "test:release-policy": "node --test scripts/release-policy.test.mjs",
     "test": "npm run build:test && jest",
     "test:debug": "npm run build:test && node --trace-warnings node_modules/.bin/jest --no-cache",
     "test:ci": "npm run build:test && jest --ci --reporters=default --reporters=jest-junit",
@@ -38,7 +49,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/duluca/DocumentTS.git"
+    "url": "https://github.com/duluca/document-ts.git"
   },
   "keywords": [
     "mongodb",
@@ -49,9 +60,9 @@
   "author": "Doguhan Uluca",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/duluca/DocumentTS/issues"
+    "url": "https://github.com/duluca/document-ts/issues"
   },
-  "homepage": "https://github.com/duluca/DocumentTS#readme",
+  "homepage": "https://github.com/duluca/document-ts#readme",
   "peerDependencies": {
     "mongodb": "^6.21.0"
   },
