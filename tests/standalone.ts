@@ -156,7 +156,7 @@ async function clearAllUsers() {
 }
 
 async function runTests() {
-  await connect('mongodb://john.smith:g00fy@localhost:27017/acme')
+  await connect({ uri: 'mongodb://john.smith:g00fy@localhost:27017/acme' })
   console.log('Connected to db.')
   console.log(`Users found: ${await UserCollection.getTotal()}`)
 

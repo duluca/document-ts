@@ -14,7 +14,7 @@ const uri = testMongoUri('document')
 describe('Document', () => {
   beforeEach(async () => {
     await close()
-    await connect(uri)
+    await connect({ uri })
     await getDbInstance().dropDatabase()
   })
 
