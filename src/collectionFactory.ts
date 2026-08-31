@@ -1,10 +1,14 @@
 import {
   AggregationCursor,
+  DeleteResult,
+  Document as MongoDocument,
   Filter,
   FindOptions,
   CountDocumentsOptions,
+  InsertOneOptions,
   ObjectId,
   UpdateFilter,
+  UpdateOptions,
   FindCursor,
   Sort,
   SortDirection,
@@ -12,7 +16,13 @@ import {
 } from 'mongodb'
 
 import { getDbInstance } from './database'
-import { DocumentException } from './documentException'
+import {
+  DocumentConflictException,
+  DocumentException,
+  DocumentHydrationException,
+  DocumentIdentifierException,
+  DocumentValidationException,
+} from './documentException'
 import {
   Func,
   ICollectionProvider,
@@ -22,7 +32,428 @@ import {
   IPaginationResult,
   IQueryParameters,
 } from './interfaces'
-import { ISerializable } from './serializer'
+import { ISerializable, SerializationStrategy, Serialize } from './serializer'
+
+const DOCUMENT_VERSION_FIELD = '__documentTsVersion'
+const defaultExcludes = [
+  '_id',
+  DOCUMENT_VERSION_FIELD,
+  'collectionName',
+  'includes',
+  'excludes',
+]
+const reservedHydrationFields = new Set([
+  '_id',
+  DOCUMENT_VERSION_FIELD,
+  'collectionName',
+  '__proto__',
+  'prototype',
+  'constructor',
+])
+
+interface HydrationResult<TDocument> {
+  data: Partial<TDocument>
+  id: ObjectId | undefined
+  version: number
+}
+
+const databaseHydrators = new WeakMap<object, (data: unknown) => void>()
+
+function createVersionedUpdate<TDocument>(
+  update: UpdateFilter<TDocument>
+): UpdateFilter<TDocument> {
+  if (!isPlainRecord(update)) {
+    throw new DocumentValidationException(
+      'findOneAndUpdate() requires an update-operator document.'
+    )
+  }
+
+  const versionedUpdate: MongoDocument = {}
+  for (const [operator, descriptor] of Object.entries(
+    Object.getOwnPropertyDescriptors(update)
+  )) {
+    if (!operator.startsWith('$') || !('value' in descriptor)) {
+      throw new DocumentValidationException(
+        'findOneAndUpdate() requires an update-operator document.'
+      )
+    }
+    const operatorValue: unknown = descriptor.value
+    assertNoVersionMutation(
+      operator,
+      operatorValue,
+      new Set<object>(),
+      operator === '$rename'
+    )
+    defineEnumerableProperty(versionedUpdate, operator, operatorValue)
+  }
+
+  const increment = versionedUpdate.$inc as unknown
+  if (increment !== undefined && !isPlainRecord(increment)) {
+    throw new DocumentValidationException(
+      'findOneAndUpdate() received an invalid $inc update.'
+    )
+  }
+
+  const versionIncrement: MongoDocument = {}
+  if (increment) {
+    for (const [key, descriptor] of Object.entries(
+      Object.getOwnPropertyDescriptors(increment)
+    )) {
+      if (!('value' in descriptor)) {
+        throw new DocumentValidationException(
+          'findOneAndUpdate() received an invalid $inc update.'
+        )
+      }
+      defineEnumerableProperty(versionIncrement, key, descriptor.value)
+    }
+  }
+  defineEnumerableProperty(versionIncrement, DOCUMENT_VERSION_FIELD, 1)
+  defineEnumerableProperty(versionedUpdate, '$inc', versionIncrement)
+
+  return versionedUpdate as UpdateFilter<TDocument>
+}
+
+function assertNoVersionMutation(
+  key: string,
+  value: unknown,
+  visited: Set<object>,
+  checkStringTargets: boolean
+): void {
+  if (
+    key === DOCUMENT_VERSION_FIELD ||
+    key.startsWith(`${DOCUMENT_VERSION_FIELD}.`) ||
+    (checkStringTargets &&
+      (value === DOCUMENT_VERSION_FIELD ||
+        (typeof value === 'string' && value.startsWith(`${DOCUMENT_VERSION_FIELD}.`))))
+  ) {
+    throw new DocumentValidationException(
+      `${DOCUMENT_VERSION_FIELD} is managed by document-ts.`
+    )
+  }
+
+  if (!value || typeof value !== 'object') {
+    return
+  }
+  if (visited.has(value)) {
+    throw new DocumentValidationException(
+      'findOneAndUpdate() does not accept cyclic update documents.'
+    )
+  }
+  if (!Array.isArray(value) && !isPlainRecord(value)) {
+    return
+  }
+
+  visited.add(value)
+  for (const [nestedKey, descriptor] of Object.entries(
+    Object.getOwnPropertyDescriptors(value)
+  )) {
+    if (!('value' in descriptor)) {
+      throw new DocumentValidationException(
+        'findOneAndUpdate() does not accept accessor properties.'
+      )
+    }
+    assertNoVersionMutation(nestedKey, descriptor.value, visited, checkStringTargets)
+  }
+  visited.delete(value)
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const prototype = Reflect.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+export abstract class Document<TDocument extends IDocument>
+  implements IDocument, ISerializable
+{
+  [index: string]: unknown
+
+  readonly #collectionName: string
+  #documentVersion = 0
+  #id: ObjectId | undefined = undefined
+
+  constructor(collectionName: string) {
+    if (!collectionName || typeof collectionName !== 'string') {
+      throw new DocumentValidationException('Document collection name is required.')
+    }
+    this.#collectionName = collectionName
+    databaseHydrators.set(this, (data: unknown) => {
+      const hydrated = this.validateHydrationData(data, true)
+      this.applyData(hydrated.data)
+      this.#id = hydrated.id
+      this.#documentVersion = hydrated.version
+    })
+  }
+
+  public get _id(): ObjectId {
+    return this.#id as ObjectId
+  }
+
+  public get collectionName(): string {
+    return this.#collectionName
+  }
+
+  protected abstract getCalculatedPropertiesToInclude(): string[]
+
+  protected abstract getPropertiesToExclude(): string[]
+
+  protected abstract applyData(data?: Partial<TDocument>): void
+
+  public fillData(data?: Partial<TDocument>): void {
+    if (data === undefined) {
+      this.applyData(data)
+      return
+    }
+
+    const hydrated = this.validateHydrationData(data, false)
+    this.applyData(hydrated.data)
+  }
+
+  protected hydrateInterface<TInterface extends TObject, TObject extends object>(
+    objectType: new () => TObject,
+    hydrator: (data: Partial<TInterface>) => TObject,
+    element: Partial<TInterface>
+  ) {
+    return element instanceof objectType ? element : hydrator(element)
+  }
+
+  protected hydrateInterfaceArray<TInterface extends TObject, TObject extends object>(
+    objectType: new () => TObject,
+    hydrator: (data: Partial<TInterface>) => TObject,
+    objectArray: Partial<TInterface>[]
+  ): TObject[] | undefined {
+    if (!objectArray || objectArray.length === 0) {
+      return undefined
+    }
+    return objectArray.map((e) => this.hydrateInterface(objectType, hydrator, e))
+  }
+
+  async save(options?: InsertOneOptions | UpdateOptions): Promise<boolean> {
+    try {
+      const id = this.getValidatedId()
+      const collection = getDbInstance().collection(this.#collectionName)
+
+      if (!id) {
+        const document = this.getPersistenceDocument()
+        defineEnumerableProperty(document, DOCUMENT_VERSION_FIELD, this.#documentVersion)
+        const result = await collection.insertOne(document, options)
+
+        if (!result.acknowledged || !(result.insertedId instanceof ObjectId)) {
+          throw new Error('Unacknowledged document insert')
+        }
+
+        this.#id = result.insertedId
+        return true
+      }
+
+      if ((options as UpdateOptions | undefined)?.upsert) {
+        throw new DocumentValidationException(
+          'Document.save() does not allow upsert for an existing document.'
+        )
+      }
+
+      const expectedVersion = this.#documentVersion
+      const nextVersion = expectedVersion + 1
+      const persistedFields = this.getPersistenceDocument()
+      const replacementFields: MongoDocument = {
+        ...persistedFields,
+        [DOCUMENT_VERSION_FIELD]: nextVersion,
+      }
+      const update: MongoDocument[] = [
+        {
+          $replaceWith: {
+            $cond: [
+              {
+                $eq: [{ $ifNull: [`$${DOCUMENT_VERSION_FIELD}`, 0] }, expectedVersion],
+              },
+              { $mergeObjects: ['$$ROOT', { $literal: replacementFields }] },
+              '$$ROOT',
+            ],
+          },
+        },
+      ]
+      const result = await collection.updateOne({ _id: id }, update, options)
+
+      if (!result.acknowledged) {
+        throw new Error('Unacknowledged document update')
+      }
+      if (result.modifiedCount !== 1) {
+        throw new DocumentConflictException()
+      }
+
+      this.#documentVersion = nextVersion
+      return true
+    } catch (error: unknown) {
+      throw DocumentException.from(error)
+    }
+  }
+
+  async delete(): Promise<DeleteResult> {
+    try {
+      const id = this.getValidatedId()
+      if (!id) {
+        throw new DocumentIdentifierException()
+      }
+
+      return await getDbInstance().collection(this.#collectionName).deleteOne({ _id: id })
+    } catch (error: unknown) {
+      throw DocumentException.from(error)
+    }
+  }
+
+  private getValidatedId(): ObjectId | undefined {
+    if (Object.prototype.hasOwnProperty.call(this, '_id')) {
+      throw new DocumentIdentifierException()
+    }
+    if (this.#id === undefined) {
+      return undefined
+    }
+    if (!(this.#id instanceof ObjectId) || !ObjectId.isValid(this.#id)) {
+      throw new DocumentIdentifierException()
+    }
+    return this.#id
+  }
+
+  private getPersistenceDocument(): MongoDocument {
+    const serialized = this.toBSON()
+    if (!serialized || typeof serialized !== 'object' || Array.isArray(serialized)) {
+      throw new DocumentValidationException('Document BSON output must be an object.')
+    }
+
+    const document: MongoDocument = {}
+    for (const [key, value] of Object.entries(serialized)) {
+      if (defaultExcludes.includes(key) || typeof value === 'function') {
+        continue
+      }
+      defineEnumerableProperty(document, key, value)
+    }
+    return document
+  }
+
+  private validateHydrationData(
+    data: unknown,
+    trustedDatabaseResult: boolean
+  ): HydrationResult<TDocument> {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new DocumentHydrationException()
+    }
+
+    const prototype = Reflect.getPrototypeOf(data)
+    if (prototype !== Object.prototype && prototype !== null) {
+      throw new DocumentHydrationException()
+    }
+    if (Object.getOwnPropertySymbols(data).length > 0) {
+      throw new DocumentHydrationException()
+    }
+
+    const descriptors = Object.getOwnPropertyDescriptors(data)
+    const sanitized: Record<string, unknown> = {}
+    let id: ObjectId | undefined
+    let version = 0
+
+    for (const [key, descriptor] of Object.entries(descriptors)) {
+      if (!('value' in descriptor)) {
+        throw new DocumentHydrationException()
+      }
+      const value: unknown = descriptor.value
+
+      if (key === '_id' && trustedDatabaseResult) {
+        if (!(value instanceof ObjectId) || !ObjectId.isValid(value)) {
+          throw new DocumentHydrationException()
+        }
+        id = value
+        continue
+      }
+      if (key === DOCUMENT_VERSION_FIELD && trustedDatabaseResult) {
+        if (!Number.isSafeInteger(value) || (value as number) < 0) {
+          throw new DocumentHydrationException()
+        }
+        version = value as number
+        continue
+      }
+
+      if (
+        reservedHydrationFields.has(key) ||
+        this.isProtectedMember(key) ||
+        typeof value === 'function'
+      ) {
+        throw new DocumentHydrationException()
+      }
+      defineEnumerableProperty(sanitized, key, value)
+    }
+
+    if (trustedDatabaseResult && id === undefined) {
+      throw new DocumentHydrationException()
+    }
+
+    return {
+      data: sanitized as Partial<TDocument>,
+      id,
+      version,
+    }
+  }
+
+  private isProtectedMember(key: string): boolean {
+    const ownDescriptor = Object.getOwnPropertyDescriptor(this, key)
+    if (
+      ownDescriptor &&
+      (typeof ownDescriptor.value === 'function' ||
+        typeof ownDescriptor.get === 'function' ||
+        typeof ownDescriptor.set === 'function')
+    ) {
+      return true
+    }
+
+    let prototype: object | null = Reflect.getPrototypeOf(this)
+    while (prototype) {
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, key)
+      if (descriptor) {
+        return true
+      }
+      prototype = Reflect.getPrototypeOf(prototype)
+    }
+    return false
+  }
+
+  private fieldsToSerialize(excludes: string[] = [], includes: string[] = []) {
+    const allExcludes = defaultExcludes.concat(excludes)
+    const keys = Object.keys(this).filter(
+      (item) => !allExcludes.includes(item) && typeof this[item] !== 'function'
+    )
+    if (this.#id) {
+      keys.push('_id')
+    }
+    return keys.concat(includes)
+  }
+
+  toJSON(): object {
+    const fields = this.fieldsToSerialize(
+      this.getPropertiesToExclude(),
+      this.getCalculatedPropertiesToInclude()
+    )
+    return Serialize(SerializationStrategy.JSON, this, fields)
+  }
+
+  toBSON(): object {
+    const fields = this.fieldsToSerialize(this.getCalculatedPropertiesToInclude())
+    return Serialize(SerializationStrategy.BSON, this, fields)
+  }
+}
+
+function defineEnumerableProperty(
+  target: Record<string, unknown>,
+  key: string,
+  value: unknown
+): void {
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    value,
+    writable: true,
+  })
+}
 
 export abstract class CollectionFactory<TDocument extends IDocument & ISerializable> {
   constructor(
@@ -58,19 +489,20 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
     const document = await this.collection().findOne(filter, options)
-    return document ? this.hydrateObject(document) : null
+    return document ? this.#hydrateObject(document) : null
   }
 
   async findOneAndUpdate(
     filter: Filter<TDocument>,
-    update: TDocument | UpdateFilter<TDocument>,
+    update: UpdateFilter<TDocument>,
     options?: FindOneAndUpdateOptions
   ): Promise<TDocument | null> {
     this.sanitizeId(filter)
+    const versionedUpdate = createVersionedUpdate(update)
     const document = options
-      ? await this.collection().findOneAndUpdate(filter, update, options)
-      : await this.collection().findOneAndUpdate(filter, update)
-    return document ? this.hydrateObject(document) : null
+      ? await this.collection().findOneAndUpdate(filter, versionedUpdate, options)
+      : await this.collection().findOneAndUpdate(filter, versionedUpdate)
+    return document ? this.#hydrateObject(document) : null
   }
 
   async findWithPagination<TReturnType extends IDbRecord>(
@@ -84,7 +516,7 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     if (queryParams.filter && !query) {
       query = queryParams.filter
     } else if (queryParams.filter && query && queryParams.filter !== query) {
-      throw new DocumentException(
+      throw new DocumentValidationException(
         'Illegal assignment: queryParams.filter and query cannot be set as different values'
       )
     }
@@ -162,7 +594,7 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     const data: TReturnType[] = []
     for await (let document of cursor) {
       if (hydrate) {
-        document = collection.hydrateObject(document).toJSON() as TReturnType
+        document = collection.#hydrateObject(document).toJSON() as TReturnType
       }
       data.push(document)
     }
@@ -247,16 +679,18 @@ export abstract class CollectionFactory<TDocument extends IDocument & ISerializa
     )
   }
 
-  hydrateObject(document: unknown): TDocument & ISerializable {
-    if (document instanceof this.documentType) {
-      return document as TDocument
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const newDocument = new this.documentType() as TDocument
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      newDocument.fillData(document)
-      return newDocument
+  #hydrateObject(document: unknown): TDocument & ISerializable {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const newDocument = new this.documentType() as TDocument
+    if (!(newDocument instanceof Document)) {
+      throw new DocumentHydrationException()
     }
+    const hydrate = databaseHydrators.get(newDocument)
+    if (!hydrate) {
+      throw new DocumentHydrationException()
+    }
+    hydrate(document)
+    return newDocument
   }
 
   async count(

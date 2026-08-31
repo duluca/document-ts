@@ -43,8 +43,8 @@ DocumentTS is an ODM (Object Document Mapper) for MongoDB.
     async findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions)
     async findOneAndUpdate(
       filter: FilterQuery<TDocument>,
-      update: TDocument | UpdateQuery<TDocument>,
-      options?: FindOneAndReplaceOption
+      update: UpdateFilter<TDocument>,
+      options?: FindOneAndUpdateOptions
      ): Promise<TDocument | null>
      ```
      - `findWithPagination` is by far the best feature of DocumentTS, allowing you to filter, sort, and paginate large collections of data. This function is geared towards use with data tables, so you specify searchable properties, turn off hydration, and use a debug feature to fine-tune your queries.
@@ -212,12 +212,26 @@ export class User extends Document<IUser> implements IUser {
   public lastName: string
   public role: string
 
-  constructor(user?: IUser) {
-    super(User.collectionName, user)
+  constructor(user?: Partial<IUser>) {
+    super(User.collectionName)
+    if (user) {
+      this.fillData(user)
+    }
+  }
+
+  protected applyData(data?: Partial<IUser>) {
+    if (data) {
+      Object.assign(this, data)
+    }
   }
   ...
 }
 ```
+
+`fillData()` validates the complete public payload before calling `applyData()`.
+It rejects identifiers, collection identity, prototype keys, and framework methods.
+Database identifiers are hydrated only by `CollectionFactory` when it constructs a
+model from a MongoDB result.
 
 - Implement `getCalculatedPropertiesToInclude()` which will ensure that your `get` properties that are "calculate" on the fly will be serialized when sending the model down to the client, but it will **not** be saved in the database.
 
@@ -280,6 +294,41 @@ export interface IQueryParameters {
     return Serialize(SerializationStrategy.BSON, this, keys)
   }
 ```
+
+## Persistence errors and concurrent saves
+
+Beginning with 7.0.0, `save()` returns `true` only for an acknowledged insert or
+update. Driver failures reject with a `DocumentException`; they no longer log and
+resolve `false`. Handle failures explicitly:
+
+```ts
+import { DocumentException } from 'document-ts'
+
+try {
+  await user.save()
+} catch (error) {
+  if (error instanceof DocumentException) {
+    // Log the stable code. Do not expose error.cause to an untrusted client.
+    logger.error({ code: error.code }, 'Unable to save user')
+  }
+  throw error
+}
+```
+
+`DOCUMENT_DUPLICATE_KEY` has a static public message. Other database failures use
+`DOCUMENT_OPERATION_FAILED`. The native driver error remains available as the
+non-enumerable `cause` for trusted diagnostics.
+
+Persisted models use optimistic concurrency. If another hydrated copy has already
+saved, `save()` rejects with `DocumentConflictException` and does not apply stale
+fields. Reload the document, reapply the intended change, and retry deliberately.
+`CollectionFactory.findOneAndUpdate()` also advances this revision and rejects
+attempts to write its reserved `__documentTsVersion` field. Its update argument
+must use MongoDB update operators. Factory hydration is private; a projected result
+without `_id` rejects instead of becoming an insertable model. Request
+`returnDocument: 'after'` when the returned model will be edited and saved again.
+
+See [MIGRATION.md](MIGRATION.md) for all 7.0.0 model changes.
 
 - To debug the default serialization behavior, implement
 

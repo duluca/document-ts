@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
+import * as publicApi from '../src/index'
 import { IUser, User, UserCollection } from './user'
 
 const expectedPassword = '$2a$10$pJsAxlvrV2hK9QWvdObYAOcvKrkI.VNyYtG01eYvJ2UYt8Keb2/6q'
@@ -28,33 +29,45 @@ describe('CollectionFactory', () => {
 
   afterEach(async () => {})
 
-  test('should hydrate object', async () => {
-    const expectedUser = getExpectedUser()
+  test('does not expose or reveal a trusted hydration hook', () => {
+    type HydrationIsPrivate = 'hydrateObject' extends keyof typeof UserCollection
+      ? never
+      : true
+    const hydrationIsPrivate: HydrationIsPrivate = true
+    const factoryPropertyNames: string[] = []
+    const factorySymbols: symbol[] = []
+    const modelSymbols: symbol[] = []
+    let prototype: object | null = UserCollection
 
-    const actualUser = UserCollection.hydrateObject(
-      Object.assign(newUser, {
-        password: expectedPassword,
-      })
-    )
+    while (prototype) {
+      factoryPropertyNames.push(...Object.getOwnPropertyNames(prototype))
+      factorySymbols.push(...Object.getOwnPropertySymbols(prototype))
+      prototype = Reflect.getPrototypeOf(prototype)
+    }
+    prototype = User.prototype
+    while (prototype) {
+      modelSymbols.push(...Object.getOwnPropertySymbols(prototype))
+      prototype = Reflect.getPrototypeOf(prototype)
+    }
 
-    expect(actualUser).toBeDefined()
-    expect(actualUser).toEqual(expectedUser)
+    expect(hydrationIsPrivate).toBe(true)
+    expect(factoryPropertyNames).not.toContain('hydrateObject')
+    expect(factoryPropertyNames).not.toContain('trustedHydration')
+    expect(factorySymbols).toEqual([])
+    expect(modelSymbols).toEqual([])
+    expect(Reflect.get(UserCollection, 'hydrateObject')).toBeUndefined()
+    expect(Reflect.get(publicApi, 'trustedHydration')).toBeUndefined()
   })
 
-  test('should not serialize private property password', async () => {
-    const actualUser = UserCollection.hydrateObject(
-      Object.assign(newUser, {
-        password: expectedPassword,
-      })
-    )
+  test('should not serialize private property password', () => {
+    const actualUser = getExpectedUser()
 
     expect((actualUser.toJSON() as any).password).toBeUndefined()
   })
 
-  test('should serialize calculate property fullname', async () => {
+  test('should serialize calculate property fullname', () => {
     const expectedFullName = 'Doguhan Uluca'
-
-    const actualUser = UserCollection.hydrateObject(newUser)
+    const actualUser = new User(newUser)
 
     expect((actualUser.toJSON() as any).fullName).toBe(expectedFullName)
   })

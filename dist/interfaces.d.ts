@@ -4,8 +4,8 @@ export interface IDbRecord extends WithId<object> {
     _id: ObjectId;
 }
 export interface IDocument extends IDbRecord {
-    _id: ObjectId;
-    collectionName: string;
+    readonly _id: ObjectId;
+    readonly collectionName: string;
 }
 export type ICollectionProvider<TDocument extends IDocument | ISerializable> = () => Collection<TDocument>;
 export type Func<TResult> = () => TResult;
