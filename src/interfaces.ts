@@ -1,4 +1,4 @@
-import { Collection, ObjectId, Sort, WithId } from 'mongodb'
+import { Collection, FindOptions, ObjectId, Sort, WithId } from 'mongodb'
 
 import { ISerializable } from './serializer'
 
@@ -17,12 +17,28 @@ export type ICollectionProvider<TDocument extends IDocument | ISerializable> =
 export type Func<TResult> = () => TResult
 
 export interface IQueryParameters {
-  filter?: string
+  filter?: string | undefined
   skip?: number | undefined
   limit?: number | undefined
   sortKeyOrList?: string | string[]
   mongoSortOverride?: Sort | undefined
-  projectionKeyOrList?: string | object[] | object
+  projectionKeyOrList?: IProjectionInput | undefined
+  rawOutput?: boolean | undefined
+  debugQuery?: boolean | undefined
+  maxTimeMS?: number | undefined
+}
+
+export type IProjectionValue = 0 | 1
+export type IProjectionInput =
+  | string
+  | string[]
+  | Record<string, IProjectionValue>
+  | Array<string | Record<string, IProjectionValue>>
+
+export interface IFindOptions extends Omit<FindOptions, 'projection'> {
+  projection?: Record<string, IProjectionValue> | undefined
+  rawOutput?: boolean | undefined
+  debugQuery?: boolean | undefined
 }
 
 export interface IPaginationResult<TDocument extends IDocument | object> {

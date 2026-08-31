@@ -14,52 +14,59 @@ A lightweight TypeScript MongoDB ODM with standout convenience features like `Co
 
 ## Major Features
 
-DocumentTS is an ODM (Object Document Mapper) for MongoDB. 
+DocumentTS is an ODM (Object Document Mapper) for MongoDB.
 
 - `connect()`
 
   _MongoDB async connection harness_
-  
+
   It can be a challenge to ensure that database connectivity exists when writing a fully async web application. `connect()` shares concurrent calls that use the same normalized URI and effective driver options. A conflicting configuration is rejected until the active connection is closed, so one process cannot silently replace another database generation.
+
 - `Document` and `IDocument`
 
   _Base Class and Interface to help define your own models_
+
 - `CollectionFactory`
 
   _Define collections, organize indexes, and aggregate queries alongside collection implementation. Below are the convenience features of a DocumentTS collection_
-    -  `get collection` returns the native MongoDB collection, so you can directly operate on it
-    
-    ```js
-    get collection(): ICollectionProvider<TDocument>
-    ```
-    - `aggregate` allows you to run a MongoDB aggregation pipeline
-    
-    ```js
-    aggregate(pipeline: object[]): AggregationCursor<TDocument>
-    ```
-    - `findOne` and `findOneAndUpdate` simplifies the operation of commonly used database functionality, automatically hydrating the models it returns
-    
-    ```js
-    async findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions)
-    async findOneAndUpdate(
-      filter: FilterQuery<TDocument>,
-      update: UpdateFilter<TDocument>,
-      options?: FindOneAndUpdateOptions
-     ): Promise<TDocument | null>
-     ```
-     - `findWithPagination` is by far the best feature of DocumentTS, allowing you to filter, sort, and paginate large collections of data. This function is geared towards use with data tables, so you specify searchable properties, turn off hydration, and use a debug feature to fine-tune your queries.
-     
-    ```js
-    async findWithPagination<TReturnType extends IDbRecord>(
-      queryParams: Partial<IQueryParameters> & object,
-      aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
-      query?: string | object,
-      searchableProperties?: string[],
-      hydrate = true,
-      debugQuery = false
-    ): Promise<IPaginationResult<TReturnType>>
-    ```
-      
+
+  - `get collection` returns the native MongoDB collection, so you can directly operate on it
+
+  ```js
+  get collection(): ICollectionProvider<TDocument>
+  ```
+  - `aggregate` allows you to run a MongoDB aggregation pipeline
+
+  ```js
+  aggregate(pipeline: object[]): AggregationCursor<TDocument>
+  ```
+  - `findOne` and `findOneAndUpdate` simplifies the operation of commonly used database functionality, automatically hydrating the models it returns
+
+  ```js
+  async findOne(filter: FilterQuery<TDocument>, options?: FindOneOptions)
+  async findOneAndUpdate(
+    filter: FilterQuery<TDocument>,
+    update: UpdateFilter<TDocument>,
+    options?: FindOneAndUpdateOptions
+   ): Promise<TDocument | null>
+  ```
+  - `findWithPagination` filters, sorts, and paginates data with finite defaults. Results use model serialization by default, including `getPropertiesToExclude()` redaction. Use the named `rawOutput: true` option only for trusted code that intentionally needs unredacted MongoDB documents.
+
+  ```js
+  async findWithPagination<TReturnType extends IDbRecord>(
+    queryParams: Partial<IQueryParameters>,
+    aggregationCursorFunc?: Func<AggregationCursor<TReturnType>>,
+    query?: Filter<TDocument>,
+    searchableProperties?: string[]
+  ): Promise<IPaginationResult<TReturnType>>
+  ```
+
+  `queryParams.filter` is untrusted free-text input and must be a primitive string at runtime. Search text is treated literally, is limited to 256 UTF-16 code units and 16 non-empty whitespace-separated tokens, and is matched only against validated `searchableProperties`. The separate `query` argument accepts a trusted MongoDB `Filter<TDocument>` for mandatory scopes such as `{ tenantId }`. Never forward an unvalidated request body to `query`.
+
+  Pagination defaults to `skip: 0`, `limit: 100`, and `maxTimeMS: 10000`. Limits must be integers from 1 through 1,000, and callers may lower but not raise the 10-second timeout. Aggregation pagination invokes its cursor factory once and derives rows and total through one scoped `$facet` pipeline.
+
+  Set `debugQuery: true` to log an allowlisted structural summary containing field names and pagination bounds. Native cursors, connection details, credentials, and query values are never logged.
+
 <!-- support-matrix:start -->
 ## Supported Toolchain
 
@@ -167,19 +174,21 @@ Concurrent calls with a different URI or effective driver options reject with `E
 import { getDbInstance } from 'document-ts'
 
 // assuming this is called within an async function
-await getDbInstance().collection('users').createIndexes([
-  {
-    key: {
-      displayName: 1,
+await getDbInstance()
+  .collection('users')
+  .createIndexes([
+    {
+      key: {
+        displayName: 1,
+      },
     },
-  },
-  {
-    key: {
-      email: 1,
+    {
+      key: {
+        email: 1,
+      },
+      unique: true,
     },
-    unique: true,
-  },
-])
+  ])
 ```
 
 - Define the interface for your first model
@@ -272,10 +281,24 @@ export interface IQueryParameters {
   filter?: string
   skip?: number
   limit?: number
-  sortKeyOrList?: string | Object[] | Object
-  projectionKeyOrList?: string | Object[] | Object
+  maxTimeMS?: number
+  sortKeyOrList?: string | string[]
+  mongoSortOverride?: Sort
+  projectionKeyOrList?:
+    | string
+    | string[]
+    | Record<string, 0 | 1>
+    | Array<string | Record<string, 0 | 1>>
+  rawOutput?: boolean
+  debugQuery?: boolean
 }
 ```
+
+Projection shorthand accepts only numeric `0` and `1` values. Computed expressions and field aliases are rejected so an excluded model field cannot be exposed under another name. `rawOutput: true` bypasses model hydration and `toJSON()` redaction for both find and aggregation pagination. A projection does not imply raw output. Treat raw output as sensitive and use it only when the caller applies an equally strict projection or otherwise controls disclosure.
+
+With default serialized output, aggregation pagination accepts only stages that cannot rename, synthesize, or import fields: `$match`, numeric-only `$project`, `$sort`, `$skip`, `$limit`, `$sample`, `$redact`, `$unset`, and `$unwind`. This prevents a pipeline from copying an excluded model field to an alias before `toJSON()` redaction. Advanced transformations and joins require explicit `rawOutput: true`; trusted callers are then responsible for complete disclosure control.
+
+When a non-empty trusted `query` is supplied with an aggregation cursor, `findWithPagination` and `getTotal` prepend it as a mandatory scope. Pipelines that import documents from another source (`$lookup`, `$graphLookup`, or `$unionWith`) are rejected in this mode because those records would not have passed the mandatory scope. Run such joins only with `rawOutput: true`, without a mandatory query, and enforce equivalent authorization inside the custom pipeline.
 
 - Optionally implement `toJSON()` to customize serialization/hydration behavior or extend `ISerializable`
 
