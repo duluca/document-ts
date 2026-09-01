@@ -1,0 +1,168 @@
+name: Publish npm package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build verified artifact without publication authority
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017
+    services:
+      mongodb:
+        image: mongo:7.0.40@sha256:b6421fd6d1c5ded6377b397d8983e2f82e2100dc5123332dcfda2065a472be5b
+        ports:
+          - 27017:27017
+    steps:
+      - name: Check out the signed tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+          cache: npm
+      - name: Pin the trusted-publishing npm client
+        run: npm install --global npm@12.0.2 --ignore-scripts
+      - name: Verify the protected release context
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          node --version
+          npm --version
+          npm run release:verify-context
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Test and build the release source
+        run: |
+          npm run security:config
+          npm run test:release-policy
+          npm run style
+          npm run lint
+          npm test
+          npm run build
+      - name: Build and verify one release artifact
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+          EXPECTED_TAG: ${{ github.ref_name }}
+        run: |
+          npm run release:pack
+          npm run release:verify
+      - name: Retain the release candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-release-candidate
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish approved artifact through OIDC
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: npm-release
+    steps:
+      - name: Check out the signed tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+      - name: Pin the trusted-publishing npm client
+        run: npm install --global npm@12.0.2 --ignore-scripts
+      - name: Reverify the protected release context
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          npm run release:verify-context
+      - name: Download the unprivileged build output
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-release-candidate
+          path: release-artifacts
+      - name: Verify the exact candidate again
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+          EXPECTED_TAG: ${{ github.ref_name }}
+        run: npm run release:verify
+      - name: Publish the verified artifact through npm OIDC
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          artifact="$(find release-artifacts -maxdepth 1 -type f -name '*.tgz')"
+          test -n "$artifact"
+          test "$(printf '%s\n' "$artifact" | wc -l | tr -d ' ')" = 1
+          publication_state="$(node scripts/release-artifact.mjs publication-state)"
+          if [ "$publication_state" = 'absent' ]; then
+            npm run release:verify-context
+            npm publish "$artifact" --access public --provenance --ignore-scripts
+          elif [ "$publication_state" = 'identical' ]; then
+            echo 'The exact artifact is already published; continuing recovery verification.'
+          else
+            echo "Unexpected publication state: $publication_state" >&2
+            exit 1
+          fi
+
+  verify-publication:
+    name: Verify published bytes and provenance without OIDC authority
+    needs: publish
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the trusted release verifier
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+      - name: Pin the signature-verification npm client
+        run: npm install --global npm@12.0.2 --ignore-scripts
+      - name: Download the exact published candidate
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-release-candidate
+          path: release-artifacts
+      - name: Verify registry bytes, signatures, and provenance
+        run: npm run release:verify-registry
+      - name: Report a post-publication verification incident
+        if: ${{ failure() }}
+        run: echo 'Publication succeeded but registry verification failed; preserve the run for incident triage.'
+      - name: Retain verified release evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-release-artifact
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 90

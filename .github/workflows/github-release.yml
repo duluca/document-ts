@@ -1,0 +1,84 @@
+name: Attach verified npm artifact to GitHub release
+
+on:
+  workflow_run:
+    workflows:
+      - Publish npm package
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  attach:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the trusted release verifier
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+      - name: Validate the triggering run before handling its artifact
+        id: trusted
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          node scripts/verify-github-release-context.mjs pre >> "$GITHUB_OUTPUT"
+      - name: Download the verified release bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-release-artifact
+          path: release-artifacts
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.trusted.outputs.run_id }}
+      - name: Verify downloaded artifact and source identity
+        id: release
+        env:
+          EXPECTED_COMMIT: ${{ steps.trusted.outputs.commit }}
+          EXPECTED_TAG: ${{ steps.trusted.outputs.tag }}
+        run: |
+          node scripts/verify-github-release-context.mjs bundle >> "$GITHUB_OUTPUT"
+      - name: Create a draft, attach all evidence, then publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+          EXPECTED_COMMIT: ${{ steps.trusted.outputs.commit }}
+          EXPECTED_TAG: ${{ steps.trusted.outputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_ARTIFACT: ${{ steps.release.outputs.artifact }}
+        run: |
+          set -euo pipefail
+          node scripts/verify-github-release-context.mjs pre-publish
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "A GitHub release already exists for $RELEASE_TAG; refusing to replace it." >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" \
+            --draft \
+            --verify-tag \
+            --generate-notes \
+            --title "$RELEASE_TAG"
+          gh release upload "$RELEASE_TAG" \
+            "$RELEASE_ARTIFACT" \
+            release-artifacts/SHA256SUMS \
+            release-artifacts/SHA512SUMS \
+            release-artifacts/INTEGRITY \
+            release-artifacts/release-manifest.json \
+            release-artifacts/npm-audit-signatures.json \
+            release-artifacts/npm-provenance-statement.json
+          gh release edit "$RELEASE_TAG" --draft=false

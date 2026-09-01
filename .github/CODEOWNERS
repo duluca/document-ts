@@ -1,0 +1,10 @@
+# Security and release controls require an eligible maintainer review.
+/.github/CODEOWNERS @duluca
+/.github/workflows/** @duluca
+/SECURITY.md @duluca
+/docs/security/** @duluca
+/package.json @duluca
+/package-lock.json @duluca
+/scripts/release-* @duluca
+/scripts/verify-* @duluca
+/src/** @duluca

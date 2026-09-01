@@ -30,6 +30,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Trust only the checked-out workspace for Git inspection
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Verify the exact toolchain
         run: |
           test "$(node --version)" = "v22.23.2"
@@ -45,6 +47,8 @@ jobs:
           npm run verify:no-download-guard
           npm run support:check
           npm run support:policy:test
+          npm run security:config
+          npm run test:release-policy
 
   build:
     name: Build, test, coverage, and package
@@ -70,6 +74,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Trust only the checked-out workspace for Git inspection
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Verify the exact toolchain
         run: |
           test "$(node --version)" = "v22.23.2"
@@ -88,10 +94,8 @@ jobs:
           test ! -s "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG"
       - name: Build reviewable package evidence
         run: |
-          package_evidence="$RUNNER_TEMP/ci-package"
-          mkdir -p "$package_evidence"
-          npm pack --pack-destination "$package_evidence"
-          npm pack --dry-run --json > "$package_evidence/package-dry-run.json"
+          npm run release:pack
+          npm run release:verify
       - name: Retain coverage and test evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -105,6 +109,6 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-package-${{ github.run_id }}
-          path: ${{ runner.temp }}/ci-package/
+          path: release-artifacts/
           if-no-files-found: error
           retention-days: 14

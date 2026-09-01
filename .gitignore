@@ -42,6 +42,7 @@ declarations
 .DS_Store
 !specs.js
 test_results
+release-artifacts
 .env
 junit.xml
 !eslint.config.js

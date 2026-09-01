@@ -149,14 +149,15 @@ try {
     'ci-secret.yml',
     '.github/workflows/ci.yml',
     (document) => {
-      document.jobs.build.env.NPM_TOKEN = '${{ secrets.NPM_TOKEN }}'
+      const credentialName = ['NPM', 'TOKEN'].join('_')
+      document.jobs.build.env[credentialName] = `\${{ secrets.${credentialName} }}`
     }
   )
   const ciGitHubToken = writeYamlMutation(
     'ci-github-token.yml',
     '.github/workflows/ci.yml',
     (document) => {
-      document.jobs.build.steps[3].env = {
+      document.jobs.build.steps[4].env = {
         GH_TOKEN: '${{ github.token }}',
       }
     }
@@ -165,15 +166,15 @@ try {
     'ci-publish.yml',
     '.github/workflows/ci.yml',
     (document) => {
-      document.jobs.build.steps[4].run = 'npm publish'
+      document.jobs.build.steps[5].run = 'npm publish'
     }
   )
   const ciArtifactBeforeGate = writeYamlMutation(
     'ci-artifact-before-gate.yml',
     '.github/workflows/ci.yml',
     (document) => {
-      const [upload] = document.jobs.build.steps.splice(5, 1)
-      document.jobs.build.steps.splice(3, 0, upload)
+      const [upload] = document.jobs.build.steps.splice(6, 1)
+      document.jobs.build.steps.splice(4, 0, upload)
     }
   )
   const ciArtifactOverwrite = writeYamlMutation(
@@ -194,11 +195,18 @@ try {
     'ci-package-inside-input.yml',
     '.github/workflows/ci.yml',
     (document) => {
-      document.jobs.build.steps[4].run = [
-        'mkdir -p ci-package',
+      document.jobs.build.steps[5].run = [
         'npm pack --pack-destination ci-package',
+        'npm run release:verify',
       ].join('\n')
       document.jobs.build.steps.at(-1).with.path = 'ci-package/'
+    }
+  )
+  const ciPackageWithoutVerification = writeYamlMutation(
+    'ci-package-without-verification.yml',
+    '.github/workflows/ci.yml',
+    (document) => {
+      document.jobs.build.steps[5].run = 'npm run release:pack'
     }
   )
   const ciLatestRunner = writeYamlMutation(
@@ -244,6 +252,13 @@ try {
     '.github/workflows/ci.yml',
     (document) => {
       document.jobs.build.if = 'always()'
+    }
+  )
+  const ciWildcardSafeDirectory = writeYamlMutation(
+    'ci-wildcard-safe-directory.yml',
+    '.github/workflows/ci.yml',
+    (document) => {
+      document.jobs.policy.steps[1].run = 'git config --global --add safe.directory "*"'
     }
   )
 
@@ -350,6 +365,13 @@ try {
     (document) => {
       document.jobs['container-digests'].steps.at(-1).run =
         'gh issue close 1 --comment "unreviewed mutation"'
+    }
+  )
+  const releaseFloatingService = writeYamlMutation(
+    'release-floating-service.yml',
+    '.github/workflows/release.yml',
+    (document) => {
+      document.jobs.build.services.mongodb.image = 'mongo:latest'
     }
   )
 
@@ -473,7 +495,11 @@ try {
     },
     {
       args: ['--ci-workflow', ciPackageInsideInput],
-      expected: 'outside the package input',
+      expected: 'create and verify reviewable release evidence',
+    },
+    {
+      args: ['--ci-workflow', ciPackageWithoutVerification],
+      expected: 'create and verify reviewable release evidence',
     },
     {
       args: ['--ci-workflow', ciLatestRunner],
@@ -498,6 +524,10 @@ try {
     {
       args: ['--ci-workflow', ciAlwaysBuild],
       expected: 'cannot bypass failures',
+    },
+    {
+      args: ['--ci-workflow', ciWildcardSafeDirectory],
+      expected: 'exactly match the reviewed service-free gate',
     },
     { args: ['--no-egress-workflow', noEgressAlways], expected: 'cannot bypass' },
     {
@@ -551,6 +581,10 @@ try {
     {
       args: ['--maintenance-workflow', maintenanceArbitraryIssueMutation],
       expected: 'exactly match the reviewed issue-write contract',
+    },
+    {
+      args: ['--release-workflow', releaseFloatingService],
+      expected: 'release MongoDB service must exactly match',
     },
     {
       args: ['--matrix', mismatchedMatrix],
