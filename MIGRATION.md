@@ -58,8 +58,8 @@ the payload contains `_id`, `collectionName`, prototype keys, framework methods,
 accessors, symbols, or function-valued members. `CollectionFactory` uses a
 module-private path to hydrate a valid MongoDB `ObjectId`; there is no public
 `hydrateObject()` escape hatch. Hydrating a projection that excludes `_id` now
-rejects, so explicitly disable hydration when you intentionally request such a
-projection.
+rejects, so set `rawOutput: true` only when trusted code intentionally requests
+such a projection and accepts responsibility for disclosure control.
 
 ## Treat identity as read-only
 
