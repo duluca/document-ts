@@ -1,0 +1,129 @@
+name: No-egress integration
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: no-egress-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: No-egress policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: node:22.23.2-bookworm@sha256:8a34c4ab3ea2c5cd194f07e317b2a8f09461d3c8b05c4e34c8ccd56d56024c4d
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the exact toolchain
+        run: |
+          test "$(node --version)" = "v22.23.2"
+          test "$(npm --version)" = "10.9.8"
+      - name: Install locked policy dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify dependency, image, and support policy
+        run: |
+          npm run audit:ci
+          npm run audit:policy:test
+          npm run verify:test-image
+          npm run verify:test-image:negative
+          npm run verify:no-download-guard
+          npm run support:check
+          npm run support:policy:test
+
+  test:
+    name: No-egress test
+    needs: policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NETWORK_NAME: document-ts-no-egress
+      MONGO_CONTAINER: document-ts-no-egress-mongo
+      DEPS_VOLUME: document-ts-no-egress-node-modules
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Resolve reviewed images from the support matrix
+        shell: bash
+        run: node scripts/resolve-test-images.mjs >> "$GITHUB_ENV"
+      - name: Preload reviewed images and locked dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$NODE_IMAGE"
+          docker pull "$MONGO_IMAGE"
+          docker volume create "$DEPS_VOLUME"
+          docker run --rm --pull never \
+            --volume "$PWD:/workspace" \
+            --volume "$DEPS_VOLUME:/workspace/node_modules" \
+            --workdir /workspace \
+            "$NODE_IMAGE" npm ci --ignore-scripts
+      - name: Verify policy before starting MongoDB
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --pull never \
+            --network none \
+            --volume "$PWD:/workspace" \
+            --volume "$DEPS_VOLUME:/workspace/node_modules" \
+            --workdir /workspace \
+            "$NODE_IMAGE" npm run verify:test-image
+          docker run --rm --pull never \
+            --network none \
+            --volume "$PWD:/workspace" \
+            --volume "$DEPS_VOLUME:/workspace/node_modules" \
+            --workdir /workspace \
+            "$NODE_IMAGE" npm run verify:test-image:negative
+      - name: Start the pinned service on an internal-only network
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker network create --internal "$NETWORK_NAME"
+          docker run --detach --pull never \
+            --name "$MONGO_CONTAINER" \
+            --network "$NETWORK_NAME" \
+            --network-alias mongodb \
+            "$MONGO_IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec "$MONGO_CONTAINER" mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' | grep -q 1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs "$MONGO_CONTAINER"
+          exit 1
+      - name: Prove egress isolation and run the full gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --pull never \
+            --network "$NETWORK_NAME" \
+            "$NODE_IMAGE" \
+            node -e 'const net=require("node:net");const socket=net.connect({host:"1.1.1.1",port:443});socket.setTimeout(1500);socket.on("connect",()=>process.exit(1));socket.on("error",()=>process.exit(0));socket.on("timeout",()=>process.exit(0))'
+          docker run --rm --pull never \
+            --network "$NETWORK_NAME" \
+            --volume "$PWD:/workspace" \
+            --volume "$DEPS_VOLUME:/workspace/node_modules" \
+            --workdir /workspace \
+            --env MONGO_URI=mongodb://mongodb:27017 \
+            --env NODE_OPTIONS=--require=/workspace/scripts/no-mongodb-download-network-guard.cjs \
+            --env DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG=/tmp/mongodb-download-attempts.log \
+            "$NODE_IMAGE" \
+            sh -c 'rm -f "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG" && npm run style && npm run lint && npm run build && npm test && test ! -s "$DOCUMENT_TS_DOWNLOAD_ATTEMPT_LOG"'
+      - name: Remove isolated test resources
+        if: always()
+        shell: bash
+        run: |
+          docker rm --force "$MONGO_CONTAINER" 2>/dev/null || true
+          docker network rm "$NETWORK_NAME" 2>/dev/null || true
+          docker volume rm "$DEPS_VOLUME" 2>/dev/null || true

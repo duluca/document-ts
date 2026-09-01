@@ -2,25 +2,21 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
-import { MongoMemoryServer } from 'mongodb-memory-server'
-
-import { close, connect } from '../src/index'
+import { close, connect, getDbInstance } from '../src/index'
+import { testMongoUri } from './mongoTest'
 import { User, UserCollection } from './user'
 
-let mongoServerInstance: MongoMemoryServer
+const uri = testMongoUri('negative')
 
 describe('Document', () => {
   beforeEach(async () => {
-    mongoServerInstance = await MongoMemoryServer.create({
-      instance: { dbName: 'testDb' },
-    })
-    const uri = mongoServerInstance.getUri()
+    await close()
     await connect(uri)
+    await getDbInstance().dropDatabase()
   })
 
   afterEach(async () => {
     await close()
-    await mongoServerInstance.stop()
   })
 
   test('should get an error when query is null with pagination', async () => {

@@ -4,25 +4,22 @@
 import { jest, describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
 import { ObjectId } from 'mongodb'
-import { MongoMemoryServer } from 'mongodb-memory-server'
 
-import { close, connect } from '../src/index'
+import { close, connect, getDbInstance } from '../src/index'
+import { testMongoUri } from './mongoTest'
 import { IUser, User, UserCollection } from './user'
 
-let mongoServerInstance: MongoMemoryServer
+const uri = testMongoUri('document')
 
 describe('Document', () => {
   beforeEach(async () => {
-    mongoServerInstance = await MongoMemoryServer.create({
-      instance: { dbName: 'testDb' },
-    })
-    const uri = mongoServerInstance.getUri()
+    await close()
     await connect(uri)
+    await getDbInstance().dropDatabase()
   })
 
   afterEach(async () => {
     await close()
-    await mongoServerInstance.stop()
   })
 
   test('should store a user', async () => {

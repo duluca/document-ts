@@ -1,0 +1,83 @@
+name: Toolchain maintenance
+
+on:
+  schedule:
+    - cron: '17 13 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: toolchain-maintenance
+  cancel-in-progress: false
+
+jobs:
+  lifecycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up the reviewed Node.js runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+      - id: check
+        name: Check supported component lifecycles
+        shell: bash
+        run: |
+          set +e
+          node scripts/check-support-lifecycle.mjs > lifecycle-report.md 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Create or update lifecycle issue
+        if: steps.check.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          title="[maintenance] Supported toolchain lifecycle action required"
+          number="$(gh issue list --state open --label dependencies --limit 1000 --json number,title --jq '.[] | select(.title == "[maintenance] Supported toolchain lifecycle action required") | .number' | head -n 1)"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file lifecycle-report.md
+          else
+            gh issue create --title "$title" --body-file lifecycle-report.md --label dependencies
+          fi
+
+  container-digests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out the source without retaining credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up the reviewed Node.js runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.23.2
+      - id: check
+        name: Check immutable container digests
+        shell: bash
+        run: |
+          set +e
+          node scripts/check-container-digests.mjs > container-report.md 2>&1
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Create or update digest proposal
+        if: steps.check.outputs.status != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          title="[maintenance] Review changed CI container digests"
+          number="$(gh issue list --state open --label dependencies --limit 1000 --json number,title --jq '.[] | select(.title == "[maintenance] Review changed CI container digests") | .number' | head -n 1)"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body-file container-report.md
+          else
+            gh issue create --title "$title" --body-file container-report.md --label dependencies --label security
+          fi

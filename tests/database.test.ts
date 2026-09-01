@@ -2,19 +2,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { jest, describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
-import { MongoMemoryServer } from 'mongodb-memory-server'
-
 import { close, connect, connectionStatus, getDbInstance } from '../src/index'
+import { testMongoUri } from './mongoTest'
 
-let mongoServerInstance: MongoMemoryServer
+const uri = testMongoUri('database')
 
 describe('Database', () => {
   describe('disconnected', () => {
     beforeEach(async () => {
       await close()
-      if (mongoServerInstance) {
-        await mongoServerInstance.stop()
-      }
     })
 
     test('should throw exception given not instantiated', async () => {
@@ -56,14 +52,11 @@ describe('Database', () => {
 
   describe('connected', () => {
     beforeEach(async () => {
-      mongoServerInstance = await MongoMemoryServer.create({
-        instance: { dbName: 'testDb' },
-      })
+      await close()
     })
 
     afterEach(async () => {
       await close()
-      await mongoServerInstance.stop()
     })
 
     test('should connect', async () => {
@@ -72,7 +65,6 @@ describe('Database', () => {
       const expectedStatus = true
       let actualStatus = false
 
-      const uri = mongoServerInstance.getUri()
       try {
         await connect(uri)
         actualStatus = connectionStatus()
@@ -90,8 +82,6 @@ describe('Database', () => {
       )
       let actualException = new Error()
 
-      const uri = mongoServerInstance.getUri()
-
       try {
         await connect(uri, true, undefined, undefined, 'server/compose-ca.pem')
       } catch (ex) {
@@ -104,8 +94,6 @@ describe('Database', () => {
     test('should fail to connect with no cert', async () => {
       const expectedException = null
       let actualException = null
-
-      const uri = mongoServerInstance.getUri()
 
       try {
         await connect(uri, false, undefined, undefined)

@@ -7,7 +7,6 @@
     "dbaeumer.vscode-eslint",
     "PKief.material-icon-theme",
     "WallabyJs.quokka-vscode",
-    "circleci.circleci",
     "github.vscode-pull-request-github"
   ]
 }

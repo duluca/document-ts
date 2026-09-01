@@ -1,0 +1,15 @@
+name: No-egress integration
+jobs:
+  policy:
+    steps:
+      - run: |
+          echo 'npm ci --ignore-scripts'
+          echo 'npm run verify:test-image'
+          echo 'npm run verify:test-image:negative'
+          docker run mongo:latest
+  test:
+    needs: policy
+    steps:
+      - run: |
+          echo 'node scripts/resolve-test-images.mjs'
+          docker run mongo:latest
