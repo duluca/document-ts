@@ -14,7 +14,12 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/tests/'],
-  coverageProvider: 'v8',
+  // Istanbul maps ts-jest branches back to TypeScript accurately; the V8
+  // provider reports generated async state-machine branches as uncovered.
+  coverageProvider: 'babel',
+  // Prefer TypeScript if a developer has stale JavaScript from the old
+  // build:test workflow, which used to emit beside the source files.
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   coverageThreshold: {
     global: {
       branches: 78,

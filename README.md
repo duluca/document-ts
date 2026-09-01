@@ -20,7 +20,7 @@ DocumentTS is an ODM (Object Document Mapper) for MongoDB.
 
   _MongoDB async connection harness_
   
-  It can be a challenge to ensure that database connectivity exists, when writing a fully async web application. `connect()` makes it easy to connect to a MongoDB instance and makes it safe to be called simultaneously from multiple threads starting up simultaneously.
+  It can be a challenge to ensure that database connectivity exists when writing a fully async web application. `connect()` shares concurrent calls that use the same normalized URI and effective driver options. A conflicting configuration is rejected until the active connection is closed, so one process cannot silently replace another database generation.
 - `Document` and `IDocument`
 
   _Base Class and Interface to help define your own models_
@@ -82,20 +82,84 @@ GitHub workflows pin [actions/checkout v7.0.1](https://github.com/actions/checko
 
 - Add DocumentTS to your project with `npm install document-ts mongodb`
 - Connect to your Mongo database using `connect()`
-- Connect will retry connecting to the database 10 times every 2 seconds
-  - Set `connectionRetryWait` (in seconds) and `connectionRetryMax` to modify this behavior
-- Specify `isProd` and `certFileUri` to connect using an SSL certificate
+- Connect retries 10 times with a 5-second delay by default.
+  - Set `retry.maxAttempts` and `retry.waitSeconds` to modify this behavior.
+- Production mode requires TLS, a trusted CA file, and certificate and hostname verification.
 
-```js
+```ts
 import { connect } from 'document-ts'
 
 async function start() {
-  // If isProd is set to true and a .pem file is provided, SSL will be used to connect: i.e. connect(config.mongoUri, isProd, 'server/compose-ca.pem')
-  await connect(process.env.MONGO_URI)
+  const uri = process.env.MONGO_URI
+  if (!uri) {
+    throw new Error('MONGO_URI is required')
+  }
+
+  await connect({
+    uri,
+    retry: { maxAttempts: 10, waitSeconds: 5 },
+    mongoClientOptions: { maxPoolSize: 10 },
+  })
 }
 
-start()
+void start()
 ```
+
+For a production connection, provide the TLS policy separately from the MongoDB driver options:
+
+```ts
+import { connect } from 'document-ts'
+
+async function start() {
+  const uri = process.env.MONGO_URI
+  if (!uri) {
+    throw new Error('MONGO_URI is required')
+  }
+
+  await connect({
+    uri,
+    production: true,
+    tls: {
+      enabled: true,
+      caFile: 'server/compose-ca.pem',
+    },
+    mongoClientOptions: {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10_000,
+    },
+  })
+}
+
+void start()
+```
+
+Production connections reject insecure driver or URI settings such as disabled certificate or hostname validation before opening a socket.
+
+### Migrating from the v6 connection API
+
+The positional `connect` signature has been removed for the next semver-major release. A v6 call such as the following no longer compiles:
+
+```text
+await connect(mongoUri, true, 5, 10, certFileUri, { poolSize: 10 })
+```
+
+Move every value into the typed options object:
+
+```ts
+import { connect } from 'document-ts'
+
+export async function connectToDatabase(mongoUri: string, certFileUri: string) {
+  await connect({
+    uri: mongoUri,
+    production: true,
+    retry: { waitSeconds: 5, maxAttempts: 10 },
+    tls: { enabled: true, caFile: certFileUri },
+    mongoClientOptions: { maxPoolSize: 10 },
+  })
+}
+```
+
+Concurrent calls with a different URI or effective driver options reject with `ERR_CONNECTION_CONFIG_CONFLICT`. If `close()` wins a race with an outstanding connection attempt, that attempt rejects with `ERR_CONNECTION_CLOSED` and its client is closed before `close()` resolves.
 
 - If you use `connect()` then you don't have to worry about having your Database Instance initialized during an asynchronous start-up sequence. `getDbInstance` gives you access to the native MongoDB driver to perform custom functions like creating indexes.
 
@@ -103,7 +167,7 @@ start()
 import { getDbInstance } from 'document-ts'
 
 // assuming this is called within an async function
-await dbInstance.collection('users').createIndexes([
+await getDbInstance().collection('users').createIndexes([
   {
     key: {
       displayName: 1,
