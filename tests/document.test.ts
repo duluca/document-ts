@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { jest, describe, expect, test, beforeEach, afterEach } from '@jest/globals'
+import { describe, expect, test, beforeEach, afterEach } from '@jest/globals'
 
 import { ObjectId } from 'mongodb'
 
@@ -93,12 +93,7 @@ describe('Document', () => {
   })
 
   test('should fail to store two users with same email (unique index)', async () => {
-    const expectedResult = false
-    let actualResult = true
-
     await UserCollection.createIndexes()
-
-    jest.spyOn(console, 'error')
 
     const user = new User({
       firstName: 'Doguhan',
@@ -113,10 +108,10 @@ describe('Document', () => {
       email: 'duluca@gmail.com',
       role: 'user',
     } as IUser)
-    actualResult = await user1.save()
-
-    expect(actualResult).toEqual(expectedResult)
-    expect(console.error).toHaveBeenCalledTimes(2)
+    await expect(user1.save()).rejects.toMatchObject({
+      code: 'DOCUMENT_DUPLICATE_KEY',
+      message: 'Document conflicts with an existing unique value.',
+    })
   })
 
   test('should create a user with array values', async () => {

@@ -1,4 +1,4 @@
-import { ISerializable, SerializationStrategy, Serialize } from '../src'
+import { ISerializable, SerializationStrategy, Serialize } from '../src/index'
 
 export interface IColor {
   hue: string

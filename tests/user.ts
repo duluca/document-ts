@@ -15,7 +15,10 @@ export interface IUser extends IDocument {
 
 export class User extends Document<IUser> implements IUser {
   constructor(user?: Partial<IUser>) {
-    super(User.collectionName, user)
+    super(User.collectionName)
+    if (user) {
+      this.fillData(user)
+    }
   }
 
   public get fullName(): string {
@@ -29,7 +32,7 @@ export class User extends Document<IUser> implements IUser {
   public role: string
   public colors: Color[]
 
-  fillData(data?: Partial<IUser>) {
+  protected applyData(data?: Partial<IUser>) {
     if (data) {
       Object.assign(this, data)
 

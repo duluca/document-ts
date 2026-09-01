@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-export interface ISerializable extends Object {
+import { Binary, Decimal128, Long, ObjectId } from 'mongodb'
+
+export interface ISerializable {
   toJSON(): object
   toBSON(): object
-  [index: string]: any
 }
 
 export enum SerializationStrategy {
@@ -19,33 +15,65 @@ export function Serialize(
   document: ISerializable,
   keys?: string[]
 ): object {
-  const strategyFunc = strategy.toString()
-  if (!keys && document && typeof document[strategyFunc] === 'function') {
-    return document[strategyFunc]()
-  } else if (!keys) {
-    return {}
+  if (!keys) {
+    return serializeValue(strategy, document) as object
   }
-  keys = Array.from(new Set(keys))
-  const serializationTarget: { [index: string]: any } = {}
-  for (const key of keys) {
-    const child = document[key]
 
-    if (child && typeof child[strategyFunc] === 'function') {
-      serializationTarget[key] = child[strategyFunc]()
-    } else if (Array.isArray(child)) {
-      if (child.length > 0) {
-        serializationTarget[key] = []
-        for (const cc of child) {
-          if (typeof cc === 'object') {
-            serializationTarget[key].push(Serialize(strategy, cc as ISerializable))
-          } else {
-            serializationTarget[key].push(cc)
-          }
-        }
-      }
-    } else {
-      serializationTarget[key] = child
-    }
+  const serializationTarget: Record<string, unknown> = {}
+  for (const key of new Set(keys)) {
+    defineEnumerableProperty(
+      serializationTarget,
+      key,
+      serializeValue(strategy, Reflect.get(document, key))
+    )
   }
   return serializationTarget
+}
+
+function isBsonNative(value: object): boolean {
+  return (
+    value instanceof Date ||
+    value instanceof ObjectId ||
+    value instanceof Decimal128 ||
+    value instanceof Long ||
+    value instanceof Binary
+  )
+}
+
+function serializeValue(strategy: SerializationStrategy, value: unknown): unknown {
+  if (value === null || typeof value !== 'object') {
+    return value
+  }
+
+  if (strategy === SerializationStrategy.BSON && isBsonNative(value)) {
+    return value
+  }
+
+  const strategyFunction: unknown = Reflect.get(value, strategy)
+  if (typeof strategyFunction === 'function') {
+    return Reflect.apply(strategyFunction, value, [])
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeValue(strategy, item))
+  }
+
+  const target: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    defineEnumerableProperty(target, key, serializeValue(strategy, child))
+  }
+  return target
+}
+
+function defineEnumerableProperty(
+  target: Record<string, unknown>,
+  key: string,
+  value: unknown
+): void {
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    value,
+    writable: true,
+  })
 }
